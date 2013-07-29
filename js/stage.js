@@ -405,6 +405,10 @@ Stage.prototype.placeUtil = function(x, y) { // place the selected util and retu
 Stage.prototype.play = function() {
     this.playStatus = 1;
     if (runTimerID == 0) this.run();
+    // else console.log(runTimerID);
+    
+    // turn off the event handler
+    this.stage.setListening(false);
 }
 
 Stage.prototype.pause = function() {
@@ -412,20 +416,21 @@ Stage.prototype.pause = function() {
 }
 
 Stage.prototype.stop = function() {
+    this.pause();
+    
     // this.playStatus = 0;
     clearTimeout(runTimerID);
     runTimerID = 0;
     
-    // reset sources
-    var srcs = this.getSources();
-    for (var i = 0; i < srcs.length; i++) srcs[i].reset();
-    
-    // reset targets
-    var targets = this.getTargets();
-    for (var i = 0; i < targets.length; i++) targets[i].reset();
+    // reset all elements
+    var allObjs = this.elements.concat(this.utilsOnMap);
+    for (var i = 0; i < allObjs.length; i++) allObjs[i].reset();
     
     // delete all particles
     this.removeAllParticles();
+    
+    // turn on the event handler
+    this.stage.setListening(true);
     
     // refresh map
     this.refresh();

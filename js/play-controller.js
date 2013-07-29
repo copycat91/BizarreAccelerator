@@ -14,11 +14,12 @@ function requestStage(stageNum) {
                 var setup = function() {
                     stage = new Stage(json);
                     stage.setup();
+                    $("#play").attr("disabled", "true");
                     
                     setTimeout(function() {
                         if (runTimerID != 0) clearTimeout(runTimerID);
                         runTimerID = 0;
-                        // enable play // ???
+                        $("#play").removeAttr("disabled"); // enable play
                     }, 2000);
                 }
                 

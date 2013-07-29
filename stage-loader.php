@@ -12,7 +12,7 @@ if ($stageNum != 0) {
         "w": 640,
         "h": 200,
         "elmts": [
-            {"type": "proton-source", "pos":[50, 50], "dir": 0},
+            {"type": "proton-source", "pos":[20, 40], "dir": 0},
             {"type": "fixed-target", "pos":[500, 40], "dir": 0},
             {"type": "alt-mag-field", "pos":[75, 40], "dir": -1},
             {"type": "strong-mag-field", "pos":[75, 100], "dir": 1},
@@ -43,16 +43,16 @@ if ($stageNum != 0) {
         "elmts": []
     },
     "utilities": {
-        "proton-source": {"num":9999},
-        "electron-source": {"num":9999},
-        "muon-source": {"num":9999},
+        "electron-source": {"num":99},
+        "proton-source": {"num":99},
+        "muon-source": {"num":99},
         
-        "strong-mag-field": {"num":9999},
-        "alt-mag-field": {"num":9999},
-        "elec-field": {"num":9999},
+        "strong-mag-field": {"num":99},
+        "alt-mag-field": {"num":99},
+        "elec-field": {"num":99},
         
-        "fixed-target": {"num":9999},
-        "collision-target": {"num":9999}
+        "fixed-target": {"num":99},
+        "collision-target": {"num":99}
     }
 }
 

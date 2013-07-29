@@ -36,8 +36,13 @@ GameObj.prototype.moveTo = function(x, y) {
     this.updateBoundingShape();
 }
 
+GameObj.prototype.reset = function() {
+    // nothing to do by default, just to avoid error
+}
+
 GameObj.prototype.rotateOnClick = function() { // function to be executed when the object is clicked
     this.dir -= Math.PI/2;
+    this.shape.setFillPatternRotation(this.dir);
 }
 
 GameObj.prototype.postProcess = function() { // post process is to be executed in each frame, e.g. count down timer to toggle magnetic field in alt-mag-field
@@ -61,18 +66,16 @@ function Source(x, y, dir) {
     this.group = "source";
     this.penetrable = true;
     
-    this.radius = 15;
-    this.angleDeg = 60;
-    this.rotationDeg = 150 + dir * 180 / Math.PI;
+    var width = 17;
+    var height = 17;
     
     this.type = "source";
     
-    this.shape = new Kinetic.Wedge({
+    this.shape = new Kinetic.Rect({
         x: x,
         y: y,
-        radius: this.radius,
-        angleDeg: this.angleDeg,
-        rotationDeg: this.rotationDeg,
+        width: width,
+        height: height,
         strokeWidth: 1
     });
     
@@ -82,27 +85,6 @@ function Source(x, y, dir) {
     this.canEmit = 1;
 }
 
-    Source.prototype.updateBoundingShape = function() {
-        var x = this.shape.getX();
-        var y = this.shape.getY();
-        
-        // getting its bounding box if it's placed in (0,0) with 0 dir
-        var bbxMax = 0;
-        var bbxMin = -this.radius * Math.cos(this.angleDeg/2 * Math.PI/180);
-        var bbyMax =  this.radius * Math.sin(this.angleDeg/2 * Math.PI/180);
-        var bbyMin = -bbyMax;
-        var boundingBox = [[bbxMin, bbyMin], [bbxMax, bbyMin], [bbxMax, bbyMax], [bbxMin, bbyMax]];
-        
-        // then let's transform it
-        boundingBox = rotateBox(boundingBox, [0,0], this.dir);
-        boundingBox = moveBox(boundingBox, [x,y]);
-        
-        this.boundingShape = {
-            "type": "box",
-            "coords": boundingBox
-        }
-    }
-
     Source.prototype.canEmitParticle = function() {
         return this.canEmit;
     }
@@ -111,11 +93,17 @@ function Source(x, y, dir) {
         // initial condition of the particle
         var x = this.shape.getX();
         var y = this.shape.getY();
-        var dir = 0;
+        var w = this.shape.getWidth();
+        var h = this.shape.getHeight();
+        var dir = this.dir;
+        
+        // warning!!! these equations are only valid if dir is multiple of PI/2
+        var xp = x + w/2 * (1 + Math.cos(dir));
+        var yp = y + h/2 * (1 + Math.sin(dir));
         
         // create the particle object
         var constructor = getConstructorFromType(this.particleType);
-        var particleObj = new constructor(x, y, dir);
+        var particleObj = new constructor(xp, yp, dir);
         
         // set velocity of the particle
         particleObj.setEnergy(this.energy);
@@ -176,12 +164,12 @@ MuonSourceObj.prototype = new BurstSourceObj();
 MuonSourceObj.prototype.constructor = MuonSourceObj;
 function MuonSourceObj(x, y, dir) {
     Source.call(this, x, y, dir);
-    this.type = "electron-source";
+    this.type = "muon-source";
     this.energy = 2000;
     
     // styling 
-    this.shape.setFill("blue");
-    this.shape.setStroke("yellow");
+    this.shape.setFillPatternImage(imagesLoader.MuonSrc);
+    this.shape.setStroke("white");
     
     this.particleType = "muon";
 }
@@ -194,8 +182,8 @@ function ElectronSourceObj(x, y, dir) {
     this.energy = 2000;
     
     // styling 
-    this.shape.setFill("blue");
-    this.shape.setStroke("yellow");
+    this.shape.setFillPatternImage(imagesLoader.ElectronSrc);
+    this.shape.setStroke("white");
     
     this.particleType = "electron";
 }
@@ -204,15 +192,17 @@ ProtonSourceObj.prototype = new BurstSourceObj();
 ProtonSourceObj.prototype.constructor = ProtonSourceObj;
 function ProtonSourceObj(x, y, dir) {
     Source.call(this, x, y, dir);
-    this.type = "electron-source";
+    this.type = "proton-source";
     this.energy = 2000;
     
     // styling 
-    this.shape.setFill("blue");
-    this.shape.setStroke("yellow");
+    this.shape.setFillPatternImage(imagesLoader.ProtonSrc);
+    this.shape.setStroke("white");
     
     this.particleType = "proton";
 }
+
+
 
 
 
@@ -315,9 +305,6 @@ function Path(x, y, dir) {
     this.updateBoundingShape();
 }
 
-    // Path.prototype.rotateOnClick = function() {
-        // this.dir -= Math.PI/2;
-    // }
 
 BlockObj.prototype = new Path();
 BlockObj.prototype.constructor = BlockObj;
@@ -392,6 +379,13 @@ function AltMagFieldObj(x, y, dir) {
         return this.active;
     }
 
+    AltMagFieldObj.prototype.reset = function() {
+        this.active = 1;
+        this.imgPointer &= 2; //  0 -> 0, 1 -> 0, 2 -> 2, 3 -> 2 (*** -> on)
+        this.shape.setFillPatternImage(this.imgs[this.imgPointer]);
+        this.timer = this.timerInit;
+    }
+    
     MagFieldObj.prototype.rotateOnClick = function() {
         this.Bz *= -1;
     }
@@ -423,11 +417,6 @@ function ElecFieldObj(x, y, dir) {
     this.shape.setFillPatternRotation(this.dir);
     this.shape.setStroke("white");
 }
-
-    ElecFieldObj.prototype.rotateOnClick = function() {
-        Path.prototype.rotateOnClick.call(this);
-        this.shape.setFillPatternRotation(this.dir);
-    }
 
 XRaySrcObj.prototype = new Path();
 XRaySrcObj.prototype.constructor = XRaySrcObj;
@@ -672,9 +661,10 @@ function PhotonObj(x, y, dir) {
 
 function getConstructorFromType(type) {
     // sources
-    if (type == "single-source") return SingleSourceObj;
-    else if (type == "burst-source") return BurstSourceObj;
-    else if (type == "proton-source") return ProtonSourceObj;
+    // if (type == "single-source") return SingleSourceObj;
+    // else if (type == "burst-source") return BurstSourceObj;
+    // else
+    if (type == "proton-source") return ProtonSourceObj;
     else if (type == "electron-source") return ElectronSourceObj;
     else if (type == "muon-source") return MuonSourceObj;
     

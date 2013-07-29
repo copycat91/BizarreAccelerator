@@ -8,6 +8,9 @@ function Images() {
     this.BAltOut = new Image();
     this.BAltOutOff = new Image();
     this.XRay = new Image();
+    this.ElectronSrc = new Image();
+    this.MuonSrc = new Image();
+    this.ProtonSrc = new Image();
     
     // load all images from their sources
     this.dir = "img/";
@@ -19,6 +22,9 @@ function Images() {
     this.BAltOut.src = this.dir + "b-alt-out.png";
     this.BAltOutOff.src = this.dir + "b-alt-out-off.png";
     this.XRay.src = this.dir + "xray.png";
+    this.ElectronSrc.src = this.dir + "srcs/e-src.png";
+    this.ProtonSrc.src = this.dir + "srcs/p-src.png";
+    this.MuonSrc.src = this.dir + "srcs/muon-src.png";
 }
 
 var imagesLoader = new Images();
