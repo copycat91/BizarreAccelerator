@@ -9,7 +9,6 @@ function requestStage(stageNum) {
         "data": {s: stageNum}, // add cookie here ???
         "dataType": "json",
         "success": function(json) {
-            console.log(json);
             if (json.eligible) {
             
                 var setup = function() {
@@ -24,7 +23,10 @@ function requestStage(stageNum) {
                 }
                 
                 if (json.intro) {
-                    showIntroduction(json.intro, setup());
+                    $("#intro").introduction({
+                        images: json.intro.images,
+                        onclose: setup
+                    });
                 } else {
                     setup();
                 }
@@ -37,10 +39,6 @@ function requestStage(stageNum) {
         },
         "error": function(a,b,c){console.log(a,b,c);}
     });
-}
-
-function showIntroduction(jsonIntro, closeFunc) {
-    // ???
 }
 
 function goToNextStage(stageName) {

@@ -7,6 +7,7 @@
         
         <script type="text/javascript" src="js/constants.js"></script>
         <script type="text/javascript" src="js/images-loader.js"></script>
+        <script type="text/javascript" src="js/introduction.js"></script>
         <script type="text/javascript" src="js/utils.js"></script>
         <script type="text/javascript" src="js/objects.js"></script>
         <script type="text/javascript" src="js/stage.js"></script>

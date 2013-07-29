@@ -26,6 +26,9 @@ if ($stageNum != 0) {
         "alt-mag-field": {"num":4},
         "elec-field": {"num":1},
         "xray": {"num":1}
+    },
+    "intro": {
+        "images": ["img/intro/1/1.png", "img/intro/1/2.png"]
     }
 }
 <?php
