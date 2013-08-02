@@ -1,0 +1,7 @@
+Did you know that proton accelerator can be used for medical imaging? Now you know.<br/>
+Shoot your protons to the imaging target.
+##
+The protons need to reach several energy to successfully perform medical imaging.<br/>
+Protons energy from the source are shown at the source's energy bar.
+##
+To accomplish the goal, the energy bar at the target has to be full.
