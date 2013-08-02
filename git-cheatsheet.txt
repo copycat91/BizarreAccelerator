@@ -1,0 +1,21 @@
+* open your terminal (if windows, use cygwin with git installed)
+* cd to this directory
+* type the command(s) below:
+
+*********** TO COMMIT FILES (upload your changes to the cloud) ***********
+== git add *
+== git commit -m "My commit message"
+== git remote add origin https://github.com/username/BizarreAccelerator.git (only do once)
+== git push origin master
+
+*********** TO PULL FILES (download changes from cloud to your computer) ***********
+== git pull
+
+*********** IF YOU RENAME/DELETE SOME FILES ***********
+* type this command before commit files:
+== git checkout master
+
+*********** TO GET THE UPDATE FROM THE MAIN GIT ***********
+== git fetch upstream
+== git merge upstream/master
+== git pull

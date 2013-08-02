@@ -1,0 +1,1 @@
+You can rotate your placed element by clicking on it

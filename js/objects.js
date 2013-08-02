@@ -56,6 +56,100 @@ GameObj.prototype.on = function(evtStr, handler) { // event handler for object, 
     });
 }
 
+// only executed if elements are fixed on a map
+GameObj.prototype.addEnergyBar = function() {
+    var x = this.shape.getX();
+    var y = this.shape.getY();
+    var w = this.shape.getWidth();
+    var h = this.shape.getHeight();
+    
+    this.energyBar = new EnergyBar(x, y, w, h, this.dir);
+}
+
+GameObj.prototype.addToLayer = function(layer) {
+    layer.add(this.shape);
+    if (typeof this.energyBar !== "undefined")
+        this.energyBar.addToLayer(layer);
+}
+
+
+
+
+function EnergyBar(x, y, w, h, dir) {
+    var thick = 5;
+    var padding = 1;
+    
+    var xb = x + w/2;
+    var yb = y + h/2;
+    var wb = w;
+    var hb = thick;
+    var offsetb = [w/2, thick + padding + h/2];
+    
+    this.outline = new Kinetic.Rect({
+        x: xb,
+        y: yb,
+        width: wb,
+        height: hb,
+        offset: offsetb,
+        strokeWidth: 1,
+        stroke: "#0c6100"
+    });
+    this.outlineTarget = new Kinetic.Rect({
+        x: xb,
+        y: yb,
+        width: wb,
+        height: hb,
+        offset: offsetb,
+        strokeWidth: 0,
+        stroke: "white",
+        fill: "white"
+    });
+    this.shape = new Kinetic.Rect({
+        x: xb,
+        y: yb,
+        width: wb,
+        height: hb,
+        offset: offsetb,
+        strokeWidth: 0,
+        fillPatternImage: imagesLoader.EnergyBar,
+        fillPatternRotation: dir
+    });
+    this.outlineTarget.setRotation(dir);
+    this.outline.setRotation(dir);
+    this.shape.setRotation(dir);
+    
+    this.dir = dir;
+    this.maxWidth = w;
+    this.min = 0;
+    this.max = 10;
+    this.val = this.max / 2;
+}
+
+EnergyBar.prototype.setEnergyBarMax = function(energyMax) {
+    this.max = energyMax * 1;
+}
+
+EnergyBar.prototype.setEnergyBarVal = function(energy) {
+    var portion = (energy - this.min) / (this.max - this.min);
+    portion = (portion > 1) ? 1 : portion;
+    var w = this.maxWidth * portion;
+    this.shape.setWidth(w);
+}
+
+EnergyBar.prototype.setEnergyBarTarget = function(energy) {
+    var portion = (energy - this.min) / (this.max - this.min);
+    portion = (portion > 1) ? 1 : portion;
+    var w = this.maxWidth * portion;
+    this.outlineTarget.setWidth(w);
+}
+
+EnergyBar.prototype.addToLayer = function(layer) {
+    layer.add(this.outlineTarget);
+    layer.add(this.outline);
+    layer.add(this.shape);
+}
+
+
 
 
 
@@ -66,8 +160,8 @@ function Source(x, y, dir) {
     this.group = "source";
     this.penetrable = true;
     
-    var width = 17;
-    var height = 17;
+    var width = 42;
+    var height = 42;
     
     this.type = "source";
     
@@ -79,6 +173,7 @@ function Source(x, y, dir) {
         strokeWidth: 1
     });
     
+    this.shape.setFillPatternRotation(this.dir);
     this.updateBoundingShape();
     
     this.energy = 0;
@@ -105,6 +200,11 @@ function Source(x, y, dir) {
         var constructor = getConstructorFromType(this.particleType);
         var particleObj = new constructor(xp, yp, dir);
         
+        // adjust the position of the particle
+        var wp = particleObj.shape.getWidth();
+        var hp = particleObj.shape.getHeight();
+        particleObj.moveTo(xp-wp/2, yp-hp/2);
+        
         // set velocity of the particle
         particleObj.setEnergy(this.energy);
         particleObj.setVelocityRad(this.dir);
@@ -115,6 +215,7 @@ function Source(x, y, dir) {
     Source.prototype.reset = function() {
         this.canEmit = 1;
     }
+
 
 SingleSourceObj.prototype = new Source();
 SingleSourceObj.prototype.constructor = SingleSourceObj;
@@ -142,7 +243,7 @@ function BurstSourceObj(x, y, dir) {
     this.shape.setStroke("yellow");
     this.energy = 2000;
     
-    this.emitCountDownVal = 10;
+    this.emitCountDownVal = C.frameInterval;
     this.emitCountDown = this.emitCountDownVal;
     this.particleType = "proton";
 }
@@ -214,8 +315,8 @@ function Target(x, y, dir) {
     this.penetrable = true; // all target are penetrable by default
     this.finish = false;
     
-    var width = 20;
-    var height = 20;
+    var width = 42;
+    var height = 42;
     
     this.type = "target";
     
@@ -228,13 +329,19 @@ function Target(x, y, dir) {
     });
     
     this.updateBoundingShape();
+    this.shape.setFillPatternRotation(this.dir);
     
     // default energy to get the goal
-    this.energy = 2500;
+    this.energy = 3000;
+    this.particleType = "all";
 }
 
+    Target.prototype.checkParticle = function(particle) {
+        return ((particle.type == this.particleType) || (this.particleType == "all"));
+    }
+    
     Target.prototype.checkGoal = function(particle) {
-        return particle.getEnergy() > this.energy;
+        return ((particle.getEnergy() >= this.energy) && this.checkParticle(particle));
     }
     
     Target.prototype.goal = function() {
@@ -246,12 +353,7 @@ function Target(x, y, dir) {
     }
     
     Target.prototype.showParticleEnergy = function(energy) {
-        var portion = parseInt(energy / this.energy * 255);
-        if (portion > 255) portion = 255;
-        // this.shape.setFillR(portion);
-        this.shape.setFillG(portion);
-        this.shape.setFillB(portion);
-        // CONF
+        if (this.energyBar) this.energyBar.setEnergyBarVal(energy);
     }
 
 FixedTargetObj.prototype = new Target();
@@ -259,8 +361,27 @@ FixedTargetObj.prototype.constructor = FixedTargetObj;
 function FixedTargetObj(x, y, dir) {
     Target.call(this, x, y, dir);
     this.type = "fixed-target";
-    this.shape.setFill("white");
-    this.shape.setStroke("green");
+    this.shape.setFillPatternImage(imagesLoader.FixedTarget);
+    this.shape.setStroke("white");
+    this.energy = 1500; // by default, it is same with source energy
+}
+
+MedImageTargetObj.prototype = new FixedTargetObj();
+MedImageTargetObj.prototype.constructor = MedImageTargetObj;
+function MedImageTargetObj(x, y, dir) {
+    FixedTargetObj.call(this, x, y, dir);
+    this.type = "med-image-target";
+    this.particleType = "proton";
+    this.shape.setFillPatternImage(imagesLoader.MedImageTarget);
+}
+
+CancerTargetObj.prototype = new FixedTargetObj();
+CancerTargetObj.prototype.constructor = CancerTargetObj;
+function CancerTargetObj(x, y, dir) {
+    FixedTargetObj.call(this, x, y, dir);
+    this.type = "cancer-target";
+    this.particleType = "proton";
+    this.shape.setFillPatternImage(imagesLoader.CancerTarget);
 }
 
 CollisionTargetObj.prototype = new Target();
@@ -268,16 +389,61 @@ CollisionTargetObj.prototype.constructor = CollisionTargetObj;
 function CollisionTargetObj(x, y, dir) {
     Target.call(this, x, y, dir);
     this.type = "collision-target";
-    this.shape.setFill("white");
-    this.shape.setStroke("red");
+    this.particleType = "proton";
+    this.shape.setFillPatternImage(imagesLoader.CollisionTarget);
+    this.shape.setStroke("white");
     this.energy = 5000;
 }
 
     CollisionTargetObj.prototype.checkGoal = function(p0, p1) {
         // see more about CM energy // ???
+        var normalizeAngle = function(t) {
+            while(t > Math.PI*2) t -= Math.PI*2;
+            while(t < 0) t += Math.PI*2;
+            return t;
+        }
+        
+        var dtheta = Math.PI/12;
+        var theta0 = normalizeAngle(Math.atan2(p0.vy, p0.vx) - this.dir);
+        var theta1 = normalizeAngle(Math.atan2(p1.vy, p1.vx) - this.dir);
+        var theta2 = normalizeAngle(theta0 - theta1);
+        
+        if ((theta2 < Math.PI - dtheta) || (theta2 > Math.PI + dtheta)) return false;
+        
+        // if execute until here, it means that p1 and p0 are nearly head-on collision
+        // check either theta0 or theta1 has angle between (PI-dt < theta < PI+dt)
+        if (!(((theta0 < Math.PI + dtheta) && (theta0 > Math.PI - dtheta)) ||
+              ((theta1 < Math.PI + dtheta) && (theta1 > Math.PI - dtheta)))) return false;
+        
         return getCMEnergy([p0,p1]) > this.energy;
     }
 
+FurnitureTargetObj.prototype = new FixedTargetObj();
+FurnitureTargetObj.prototype.constructor = FurnitureTargetObj;
+function FurnitureTargetObj(x, y, dir) {
+    FixedTargetObj.call(this, x, y, dir);
+    this.type = "furniture-target";
+    this.particleType = "electron";
+    this.shape.setFillPatternImage(imagesLoader.FurnitureTarget);
+}
+
+FoodTargetObj.prototype = new FixedTargetObj();
+FoodTargetObj.prototype.constructor = FoodTargetObj;
+function FoodTargetObj(x, y, dir) {
+    FixedTargetObj.call(this, x, y, dir);
+    this.type = "food-target";
+    this.particleType = "electron";
+    this.shape.setFillPatternImage(imagesLoader.FoodTarget);
+}
+
+CargoTargetObj.prototype = new FixedTargetObj();
+CargoTargetObj.prototype.constructor = CargoTargetObj;
+function CargoTargetObj(x, y, dir) {
+    FixedTargetObj.call(this, x, y, dir);
+    this.type = "cargo-target";
+    this.particleType = "xray-photon";
+    this.shape.setFillPatternImage(imagesLoader.CargoTarget);
+}
 
 
 
@@ -290,8 +456,8 @@ function Path(x, y, dir) {
     this.group = "path";
     this.penetrable = true; // most of the path are penetrable
     
-    var width = 17;
-    var height = 17;
+    var width = 42;
+    var height = 42;
     
     this.type = "path";
     this.shape = new Kinetic.Rect({
@@ -312,8 +478,12 @@ function BlockObj(x, y, dir) {
     Path.call(this, x, y, dir);
     this.penetrable = false; // blocking object is not penetrable
     this.type = "block";
-    this.shape.setFill("brown");
-    this.shape.setStroke("black");
+    
+    // styling
+    this.img = imagesLoader.Block;
+    this.shape.setFillPatternImage(this.img);
+    this.shape.setFillPatternRotation(this.dir);
+    this.shape.setStroke("white");
 }
 
 MagFieldObj.prototype = new Path();
@@ -340,7 +510,7 @@ function StrongMagFieldObj(x, y, dir) {
     this.shape.setStroke("white");
     
     var BDir = (this.dir >= 0) ? 1 : -1;
-    this.Bz = BDir * 5.2;
+    this.Bz = BDir * 2.45;
 }
 
 AltMagFieldObj.prototype = new Path();
@@ -356,10 +526,10 @@ function AltMagFieldObj(x, y, dir) {
     this.shape.setStroke("white");
     
     var BDir = (this.dir >= 0) ? 1 : -1;
-    this.Bz = BDir * 5.2;
+    this.Bz = BDir * 2.45;
     
     this.active = 1;
-    this.timerInit = 10;
+    this.timerInit = C.frameInterval;
     this.timer = this.timerInit;
 }
 
@@ -436,17 +606,28 @@ function XRaySrcObj(x, y, dir) {
     XRaySrcObj.prototype.canProduceXRay = function(p) { // when a particle collide it
         if (p.getEnergy() < this.energyMin) return false;
         if (p.type != "electron") return false;
+        
+        // check its direction
+        var theta = Math.atan2(p.vy, p.vx) - this.dir;
+        while (theta > 2*Math.PI) theta -= 2*Math.PI;
+        while (theta < 0) theta += 2*Math.PI;
+        var dtheta = Math.PI/6; // 30 deg
+        if ((theta > Math.PI + dtheta) || (theta < Math.PI - dtheta)) return false;
+        
         return true;
     }
     
     XRaySrcObj.prototype.produceXRay = function(p) {
         // initial condition of the particle
-        var x = p.shape.getX();
-        var y = p.shape.getY();
-        var dir = Math.random() * Math.PI/2 - Math.PI/4 + p.dir; // from p.dir-pi/4 to p.dir+pi/4
+        var x = p.shape.getX();// + p.shape.getWidth();
+        var y = p.shape.getY();// + p.shape.getHeight();
+        
+        var dtheta = Math.PI/6;
+        var dir = this.dir + Math.PI/2;
+        dir += Math.random() * dtheta - dtheta/2;
         
         // create the particle object
-        var constructor = getConstructorFromType("photon");
+        var constructor = getConstructorFromType("xray-photon");
         var particleObj = new constructor(x, y, dir);
         
         // set velocity of the particle
@@ -466,15 +647,24 @@ Particle.prototype.constructor = Particle;
 function Particle(x, y, dir) {
     GameObj.call(this, x, y, dir);
     this.group = "particle";
-    var r = 4;
+    this.width = 10;
+    this.height = 10;
+    // var r = 10;
     
     this.type = "particle";
-    this.shape = new Kinetic.Circle({
+    this.shape = new Kinetic.Rect({
         x: x,
         y: y,
-        radius: r,
-        strokeWidth: 1
+        width: this.width,
+        height: this.height,
+        strokeWidth: 0
     });
+    // this.shape = new Kinetic.Circle({
+        // x: x,
+        // y: y,
+        // radius: r,
+        // strokeWidth: 1
+    // });
     this.updateBoundingShape();
     
     this.m = 1; // in eV/c^2
@@ -492,11 +682,14 @@ function Particle(x, y, dir) {
         var r = this.shape.getWidth()/2;
         
         var scale = Math.sqrt(Math.PI/4); // to get the same area between the circle and the bounding box of particle
-        var d = r*scale;
+        var d1 = r*scale - r;
+        var d2 = r*scale + r;
+        // var d1 = r*scale;
+        // var d2 = d1;
         
         this.boundingShape = {
             "type": "box",
-            "coords": [[x-d,y-d],[x+d,y-d],[x+d,y+d],[x-d,y+d]]
+            "coords": [[x-d1,y-d1],[x+d2,y-d1],[x+d2,y+d2],[x-d1,y+d2]]
         }
     }
 
@@ -575,6 +768,7 @@ function Particle(x, y, dir) {
     
     // collision between 2 particles usually emits some new particles, this function create the new particles and return them
     Particle.prototype.collisionParticles = function(p1) {
+        // still handle two particles collision with the same type of particle
         var particles = [];
         for (var i = 0; i < 2; i++) {
             // initial condition of the particle
@@ -600,8 +794,7 @@ MuonObj.prototype.constructor = MuonObj;
 function MuonObj(x, y, dir) {
     Particle.call(this, x, y, dir);
     this.type = "muon";
-    this.shape.setFill("red");
-    this.shape.setStroke("green");
+    this.shape.setFillPatternImage(imagesLoader.Muon);
     this.lifetime = Infinity;
 }
 
@@ -610,8 +803,7 @@ ProtonObj.prototype.constructor = ProtonObj;
 function ProtonObj(x, y, dir) {
     Particle.call(this, x, y, dir);
     this.type = "proton";
-    this.shape.setFill("blue");
-    this.shape.setStroke("white");
+    this.shape.setFillPatternImage(imagesLoader.Proton);
 }
 
 ElectronObj.prototype = new Particle();
@@ -619,8 +811,8 @@ ElectronObj.prototype.constructor = ElectronObj;
 function ElectronObj(x, y, dir) {
     Particle.call(this, x, y, dir);
     this.type = "electron";
-    this.shape.setFill("yellow");
-    this.shape.setStroke("white");
+    this.q = -1;
+    this.shape.setFillPatternImage(imagesLoader.Electron);
 }
 
 PositronObj.prototype = new Particle();
@@ -644,11 +836,25 @@ function PhotonObj(x, y, dir) {
     this.vx = 150;
     this.vy = 0;
     
-    this.shape.setRadius(2);
-    this.shape.setFill("yellow");
-    this.shape.setStroke("white");
+    // this.shape.setRadius(2);
+    this.shape.setFillPatternImage(imagesLoader.Photon);
 }
 
+    PhotonObj.prototype.updateBoundingShape = function() {
+        var x = this.shape.getX();
+        var y = this.shape.getY();
+        var r = 1.5;
+        
+        var scale = Math.sqrt(Math.PI/4); // to get the same area between the circle and the bounding box of particle
+        var d1 = r*scale - r;
+        var d2 = r*scale + r;
+        
+        this.boundingShape = {
+            "type": "box",
+            "coords": [[x-d1,y-d1],[x+d2,y-d1],[x+d2,y+d2],[x-d1,y+d2]]
+        }
+    }
+    
     PhotonObj.prototype.getEnergy = function() {
         return this.energy;
     }
@@ -657,6 +863,12 @@ function PhotonObj(x, y, dir) {
         this.energy = energy;
     }
 
+XRayPhotonObj.prototype = new PhotonObj();
+XRayPhotonObj.prototype.constructor = XRayPhotonObj;
+function XRayPhotonObj(x, y, dir) {
+    PhotonObj.call(this, x, y, dir);
+    this.type = "xray-photon";
+}
 
 
 function getConstructorFromType(type) {
@@ -670,7 +882,12 @@ function getConstructorFromType(type) {
     
     // targets
     else if (type == "fixed-target") return FixedTargetObj;
+    else if (type == "med-image-target") return MedImageTargetObj;
+    else if (type == "cancer-target") return CancerTargetObj;
     else if (type == "collision-target") return CollisionTargetObj;
+    else if (type == "furniture-target") return FurnitureTargetObj;
+    else if (type == "food-target") return FoodTargetObj;
+    else if (type == "cargo-target") return CargoTargetObj;
     
     // paths
     else if (type == "block") return BlockObj;
@@ -686,5 +903,6 @@ function getConstructorFromType(type) {
     else if (type == "electron") return ElectronObj;
     else if (type == "positron") return PositronObj;
     else if (type == "photon") return PhotonObj;
+    else if (type == "xray-photon") return XRayPhotonObj;
     return;
 }

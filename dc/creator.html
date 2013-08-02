@@ -8,6 +8,7 @@ Stage Name: <input type="text" id="stage-name"/>
 
 <div id="stage-container"></div>
 <div id="utils-container"></div>
+<div id="elements-container"></div>
 
 <textarea id="stage-conf"></textarea>
 
@@ -16,6 +17,9 @@ Stage Name: <input type="text" id="stage-name"/>
 <script type="text/javascript">
     requestStage(0);
     document.getElementById("stage-container").addEventListener("contextmenu", function(e) {
+        e.preventDefault();
+    });
+    document.getElementById("utils-container").addEventListener("contextmenu", function(e) {
         e.preventDefault();
     });
     

@@ -6,7 +6,7 @@
 
 (function($) {
     $.fn.introduction = function(options) {
-        var imgsContainerElmt, prevBtnElmt, nextBtnElmt, images, imgPointer;
+        var imgsContainerElmt, textsContainerElmt, prevBtnElmt, nextBtnElmt, images, imgPointer;
         var settings;
         
         var elmt = $(this);
@@ -14,6 +14,7 @@
         // define wide-used functions in this plugins
         var saveInfo = function() {
             elmt.data("imgsContainerElmt", imgsContainerElmt);
+            elmt.data("textsContainerElmt", textsContainerElmt);
             elmt.data("prevBtnElmt", prevBtnElmt);
             elmt.data("nextBtnElmt", nextBtnElmt);
             elmt.data("closeBtnElmt", closeBtnElmt);
@@ -24,6 +25,7 @@
         }
         var loadInfo = function() {
             imgsContainerElmt = elmt.data("imgsContainerElmt");
+            textsContainerElmt = elmt.data("textsContainerElmt");
             prevBtnElmt = elmt.data("prevBtnElmt");
             nextBtnElmt = elmt.data("nextBtnElmt");
             closeBtnElmt = elmt.data("closeBtnElmt");
@@ -41,6 +43,7 @@
             // default options values
             settings = $.extend({
                 images: [], // array of sources of images
+                texts: [],
                 onclose: function() {}
             }, options);
             
@@ -55,19 +58,21 @@
                 images.push(img);
             }
             
-            // append a introduction images container
+            // append an introduction images and texts container
             elmt.append("<div class='intro-images'>Loading...</div>");
+            elmt.append("<div class='intro-texts'></div>");
             
-            // append two buttons (prev and next)
+            // append 3 buttons (prev, next, and close)
             elmt.append("<input type='button' class='intro-prev' value='Prev'/>");
             elmt.append("<input type='button' class='intro-next' value='Next'/>");
             elmt.append("<input type='button' class='intro-close' value='Close'/>");
             
             // get the new elements
-            var imgsContainerElmt = elmt.find(".intro-images");
-            var prevBtnElmt = elmt.find(".intro-prev");
-            var nextBtnElmt = elmt.find(".intro-next");
-            var closeBtnElmt = elmt.find(".intro-close");
+            imgsContainerElmt = elmt.find(".intro-images");
+            textsContainerElmt = elmt.find(".intro-texts");
+            prevBtnElmt = elmt.find(".intro-prev");
+            nextBtnElmt = elmt.find(".intro-next");
+            closeBtnElmt = elmt.find(".intro-close");
             
             // save the important variables into the element
             saveInfo();
@@ -83,6 +88,7 @@
             // add the first image
             // imgsContainerElmt.html("<img src='"+images[imgPointer].src+"'/>");
             imgsContainerElmt.html(images[imgPointer]);
+            textsContainerElmt.html(settings.texts[imgPointer]);
             
             // set the initial state of next and prev button
             if (imgPointer == 0) {
@@ -92,7 +98,7 @@
                 nextBtnElmt.attr("disabled", "true");
             }
             
-            // now display the window
+            // now display the window with some styling
             elmt.css("display", "block");
             elmt.css("position", "fixed");
             elmt.css("top", "0px");
@@ -100,6 +106,7 @@
             elmt.css("width", "100%");
             elmt.css("height", "100%");
             elmt.css("z-index", "999999");
+            elmt.css("background", "white");
         }
         
         // show next image
@@ -111,6 +118,7 @@
             // if there is still next image, then load the next image while increasing the pointer
             if (imgPointer < images.length - 1) {
                 imgsContainerElmt.html(images[++imgPointer]);
+                textsContainerElmt.html(settings.texts[imgPointer]);
             }
             
             // if it already reaches the last image, then disable this button
@@ -136,6 +144,7 @@
             // if there is still prev image, then load the image and decreasing the pointer
             if (imgPointer > 0) {
                 imgsContainerElmt.html(images[--imgPointer]);
+                textsContainerElmt.html(settings.texts[imgPointer]);
             }
             
             // if it reaches the beginning of the slide, then disable this button

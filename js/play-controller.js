@@ -3,6 +3,7 @@ var utils;
 var runTimerID = 0;
 
 function requestStage(stageNum) {
+    var stageCreator = (stageNum == 0);
     $.ajax({
         "type": "POST",
         "url" : "stage-loader.php",
@@ -12,7 +13,7 @@ function requestStage(stageNum) {
             if (json.eligible) {
             
                 var setup = function() {
-                    stage = new Stage(json);
+                    stage = new Stage(json, stageCreator);
                     stage.setup();
                     $("#play").attr("disabled", "true");
                     
@@ -24,9 +25,11 @@ function requestStage(stageNum) {
                 }
                 
                 if (json.intro) {
+                    setTimeout(setup, 100);
                     $("#intro").introduction({
                         images: json.intro.images,
-                        onclose: setup
+                        texts: json.intro.texts//,
+                        // onclose: setup
                     });
                 } else {
                     setup();

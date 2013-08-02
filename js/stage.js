@@ -1,4 +1,8 @@
-function Stage(data) {
+function Stage(data, stageCreator) {
+    // get stageCreator mode
+    if (typeof stageCreator === "undefined") stageCreator = false;
+    this.stageCreator = stageCreator;
+    
     runTimerID = 0;
     this.data = data;
     this.stageName = data.stageName;
@@ -7,13 +11,18 @@ function Stage(data) {
     this.map = data.map;
     this.goal = data.map.goal;
     this.utils = data.utilities;
-    this.particleType = data.map.particle;
+    if (this.stageCreator) this.providedElements = {};
     
     // predefined constants
+    this.w = 1024;
+    this.h = 550;
     this.stage_container = "stage-container";
     this.utils_container = "utils-container";
-    this.utils_container_w = 300;
-    this.utils_container_h = 100;
+    this.utils_container_w = 1024;
+    this.utils_container_h = 110;
+    this.elements_container = "elements-container";
+    this.elements_container_w = 1024;
+    this.elements_container_h = 110;
     
     this.stage;
     this.mBgLayer; this.mLayer; this.mParticlesLayer; this.mUtilsLayer;
@@ -25,6 +34,9 @@ function Stage(data) {
     this.elements = [];
     this.utilsOnMap = [];
     this.particles = [];
+    
+    this.sources = [];
+    this.targets = [];
     
     this.objects = [];
     this.particles = [];
@@ -42,9 +54,16 @@ Stage.prototype.setup = function() {
     this.uImageLayer = new Kinetic.Layer();
     this.uNumLayer = new Kinetic.Layer();
     
+    // layers on the elements provided canvas (only in stage creator mode)
+    if (this.stageCreator) {
+        this.eImageLayer = new Kinetic.Layer();
+        this.eNumLayer = new Kinetic.Layer();
+    }
+    
     this.setStageMap();
-    this.setGoal();
+    if (this.canShowEnergyBars()) this.setEnergyBars();
     this.setUtilities();
+    if (this.stageCreator) this.setProvidedElements();
     
     this.draw();
 }
@@ -55,16 +74,16 @@ Stage.prototype.setStageMap = function() {
     // set canvas stage according to map's grid
     this.stage = new Kinetic.Stage({
         container: this.stage_container,
-        width : this.map.w,
-        height: this.map.h
+        width : this.w,
+        height: this.h
     });
     
     // add background
     this.bg = new Kinetic.Rect({
         x: 0,
         y: 0,
-        width: this.map.w,
-        height: this.map.h,
+        width: this.w,
+        height: this.h,
         fill: "white"
     });
     this.mBgLayer.add(this.bg);
@@ -92,8 +111,43 @@ Stage.prototype.setStageMap = function() {
     // disable drag in the fixed map layer // ???
 }
 
-Stage.prototype.setGoal = function() {
-    // set display for energy target ???
+// some stage can't show energy bars before we introduce them
+Stage.prototype.canShowEnergyBars = function() {
+    // console.log(this.stageName);
+    return (parseInt(this.stageName) >= 8);
+}
+
+// set the energy bar above sources and targets
+Stage.prototype.setEnergyBars = function() {
+    var sources = this.getSources();
+    var targets = this.getTargets();
+    var alls = sources.concat(targets);
+    
+    // get the max energy
+    var maxEnergy = 0;
+    for (var i = 0; i < alls.length; i++) {
+        if (alls[i].energy > maxEnergy) {
+            maxEnergy = alls[i].energy;
+        }
+        alls[i].addEnergyBar();
+    }
+    
+    // show the energy bars condition
+    for (var i = 0; i < sources.length; i++) {
+        var ebar = sources[i].energyBar;
+        ebar.setEnergyBarMax(maxEnergy);
+        ebar.setEnergyBarVal(sources[i].energy);
+        ebar.addToLayer(this.mLayer);
+    }
+    
+    // set the energy bars of the targets
+    for (var i = 0; i < targets.length; i++) {
+        var ebar = targets[i].energyBar;
+        ebar.setEnergyBarMax(maxEnergy);
+        ebar.setEnergyBarVal(0);
+        ebar.setEnergyBarTarget(targets[i].energy);
+        ebar.addToLayer(this.mLayer);
+    }
 }
 
 Stage.prototype.setUtilities = function() {
@@ -110,6 +164,15 @@ Stage.prototype.setUtilities = function() {
         this.utils[type].selected = 0;
     }
     this.refreshUtils();
+}
+
+Stage.prototype.setProvidedElements = function() {
+    this.elementsCanvas = new Kinetic.Stage({
+        container: this.elements_container,
+        width: this.elements_container_w,
+        height: this.elements_container_h
+    });
+    this.refreshProvidedElements();
 }
 
 /* Create a corresponding object from element.
@@ -131,12 +194,14 @@ Stage.prototype.makeObjFromElmt = function(elmt) {
  */
 Stage.prototype.addElement = function(elmtObj) {
     this.elements.push(elmtObj);
-    this.mLayer.add(elmtObj.shape);
+    elmtObj.addToLayer(this.mLayer);
+    this.refreshSourcesAndTargets();
 }
 
 Stage.prototype.addUtil = function(utilObj) {
     this.utilsOnMap.push(utilObj);
-    this.mUtilsLayer.add(utilObj.shape);
+    utilObj.addToLayer(this.mUtilsLayer);
+    this.refreshSourcesAndTargets();
 }
 
 Stage.prototype.removeUtil = function(utilObj) {
@@ -152,6 +217,7 @@ Stage.prototype.removeUtil = function(utilObj) {
     }
     if (idx != -1) {
         this.mUtilsLayer.children[idx].remove();
+        this.refreshSourcesAndTargets();
         this.refreshUtils();
         this.refresh();
     }
@@ -167,7 +233,7 @@ Stage.prototype.removeAllUtils = function() {
 
 Stage.prototype.addParticle = function(particleObj) {
     this.particles.push(particleObj);
-    this.mParticlesLayer.add(particleObj.shape);
+    particleObj.addToLayer(this.mParticlesLayer);
 }
 
 Stage.prototype.removeParticle = function(particleObj) {
@@ -206,7 +272,15 @@ Stage.prototype.refresh = function() {
 }
 
 /* getting elements on the map */
-Stage.prototype.getSources = function() {
+Stage.prototype.refreshSourcesAndTargets = function() {
+    this.sources = this.getSources(false);
+    this.targets = this.getTargets(false);
+}
+
+Stage.prototype.getSources = function(fromCache) {
+    if (typeof fromCache === "undefined") return this.sources;
+    if (fromCache) return this.sources;
+    
     var objects = this.elements.concat(this.utilsOnMap);
     var srcs = [];
     for (var i = 0; i < objects.length; i++) {
@@ -215,7 +289,10 @@ Stage.prototype.getSources = function() {
     return srcs;
 }
 
-Stage.prototype.getTargets = function() {
+Stage.prototype.getTargets = function(fromCache) {
+    if (typeof fromCache === "undefined") return this.targets;
+    if (fromCache) return this.targets;
+    
     var objects = this.elements.concat(this.utilsOnMap);
     var targets = [];
     for (var i = 0; i < objects.length; i++) {
@@ -234,16 +311,16 @@ Stage.prototype.refreshUtils = function() { // refresh the utils canvas accordin
     this.uNumLayer.removeChildren();
     
     // set the position pointer // CONF
-    var xMin = 10;
-    var yMin = 10;
-    var xMax = 150;
-    var dx = 30;
-    var dy = 30;
+    var xMin = 5;
+    var yMin = 5;
+    var xMax = this.utils_container_w - 50;
+    var dx = 50;
+    var dy = 50;
     var dir = 0;
     var x = xMin;
     var y = yMin;
-    var xNum = 15;
-    var yNum = 15;
+    var xNum = 41; // offset of the number below the image
+    var yNum = 43;
     
     // add drawings to the utils canvas
     var type;
@@ -259,15 +336,37 @@ Stage.prototype.refreshUtils = function() { // refresh the utils canvas accordin
         
         // select/unselect util if it's clicked
         var thisObj = this;
-        obj.on("click", function() {
-            // toggle selected
-            var selected = thisObj.utils[this.type].selected;
-            thisObj.setSelectUtil(this.type, 1-selected);
-            thisObj.refreshUtils();
+        obj.on("mouseup", function(e) {
+            
+            // detect right or left click
+            var rightClick = false;
+            if (e.which) rightClick = (e.which == 3);
+            else if (e.button) rightClick = (e.button == 2);
+            
+            if (!rightClick) { // left clicked
+                // toggle selected
+                var selected = thisObj.utils[this.type].selected;
+                thisObj.setSelectUtil(this.type, 1-selected);
+                thisObj.refreshUtils();
+            }
+            else { // right clicked
+                if (this.stageCreator) {
+                    thisObj.addProvidedElements(this.type, -1); // decrease the number of the provided element
+                    thisObj.refreshProvidedElements();
+                    return false;
+                }
+            }
+        });
+        
+        obj.on("dblclick", function(e) {
+            if (this.stageCreator) {
+                thisObj.addProvidedElements(this.type, 1); // increase the number of the provided element
+                thisObj.refreshProvidedElements();
+            }
         });
         
         // add the shape of the util
-        this.uImageLayer.add(obj.shape);
+        obj.addToLayer(this.uImageLayer);
         
         // add the number besides the image
         var num = this.utils[type].num;
@@ -401,6 +500,75 @@ Stage.prototype.placeUtil = function(x, y) { // place the selected util and retu
     return obj;
 }
 
+/* provided elements function (only in stage creator mode) */
+Stage.prototype.refreshProvidedElements = function() {
+    // clear canvas
+    this.elementsCanvas.removeChildren();
+    
+    // clear all Layers
+    this.eImageLayer.removeChildren();
+    this.eNumLayer.removeChildren();
+    
+    // set the position pointer // CONF
+    var xMin = 5;
+    var yMin = 5;
+    var xMax = this.utils_container_w - 50;
+    var dx = 50;
+    var dy = 50;
+    var dir = 0;
+    var x = xMin;
+    var y = yMin;
+    var xNum = 41; // offset of the number below the image
+    var yNum = 43;
+    
+    var type;
+    for (type in this.providedElements) {
+        // add the utilities objects images to the canvas
+        var constructor = getConstructorFromType(type);
+        var obj = new constructor(x, y, 0);
+        
+        // add the shape of the util
+        obj.addToLayer(this.eImageLayer);
+        
+        // add the number besides the image
+        var num = this.providedElements[type].num;
+        var numShape = new Kinetic.Text({
+            x: x+xNum,
+            y: y+yNum,
+            text: num.toString(),
+            fontSize: 10,
+            fontFamily: "Calibri",
+            fill: "black"
+        });
+        this.eNumLayer.add(numShape);
+        
+        // update the position
+        x += dx;
+        if (x > xMax) {
+            x = xMin;
+            y += dy;
+        }
+    }
+    
+    // add the new canvas
+    this.elementsCanvas.add(this.eImageLayer);
+    this.elementsCanvas.add(this.eNumLayer);
+}
+
+Stage.prototype.addProvidedElements = function(typeAdded, num) {
+    var found = false;
+    
+    for (var type in this.providedElements) {
+        if (type != typeAdded) continue;
+        
+        found = true;
+        this.providedElements[type].num += num;
+        break;
+    }
+    
+    if (!found && num > 0) this.providedElements[typeAdded] = {"num": num};
+}
+
 /* Stage runtime functions */
 Stage.prototype.play = function() {
     this.playStatus = 1;
@@ -503,13 +671,11 @@ Stage.prototype.run = function() {
             }
             
             // **** check target/goal ****
-            // check if a particle collides the target
-            if (p1.type == "fixed-target") {
-                if (p1.checkGoal(p0)) {
-                    p1.goal();
-                }
-                
-                p1.showParticleEnergy(p0.getEnergy());
+            // check if a particle collides the fixed target
+            var fixedTargets = ["fixed-target", "cancer-target", "med-image-target", "cargo-target", "furniture-target", "food-target"];
+            if (fixedTargets.indexOf(p1.type) != -1) {
+                if (p1.checkGoal(p0)) p1.goal();
+                if (p1.checkParticle(p0)) p1.showParticleEnergy(p0.getEnergy());
             }
             // check if two particles collide inside the detector (collision target)
             else if (p1.group == "particle") {
@@ -559,7 +725,7 @@ Stage.prototype.run = function() {
             var d = 5; // deviation, just to make sure it's deleted after not showing at all
             var x = this.particles[i].shape.getX();
             var y = this.particles[i].shape.getY();
-            if (!(x >= -d && x < this.map.w+d && y >= -d && y < this.map.h+d))
+            if (!(x >= -d && x < this.w+d && y >= -d && y < this.h+d))
                 this.removeParticle(this.particles[i]);
         }
         
@@ -651,9 +817,8 @@ Stage.prototype.getConfigObj = function() {
     var conf = {};
     conf.stageName = "";
     conf.map = {};
-    conf.map.w = this.map.w;
-    conf.map.h = this.map.h;
     conf.map.elmts = [];
+    conf.utilities = {};
     
     for (var i = 0; i < objects.length; i++) {
         var obj = {};
@@ -661,6 +826,11 @@ Stage.prototype.getConfigObj = function() {
         obj.pos = [objects[i].shape.getX(), objects[i].shape.getY()];
         obj.dir = objects[i].dir;
         conf.map.elmts.push(obj);
+    }
+    
+    for (var type in this.providedElements) {
+        var num = this.providedElements[type].num;
+        if (num > 0) conf.utilities[type] = {"num": num};
     }
     
     return conf;
