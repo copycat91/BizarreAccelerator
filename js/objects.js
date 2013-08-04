@@ -777,11 +777,15 @@ function Particle(x, y, dir) {
     Particle.prototype.collisionParticles = function(p1) {
         // still handle two particles collision with the same type of particle
         var particles = [];
+        var dir;
         for (var i = 0; i < 2; i++) {
             // initial condition of the particle
             var x = this.shape.getX();
             var y = this.shape.getY();
-            var dir = Math.random() * 2 * Math.PI;
+            
+            // get the opposite direction of the resulted particles
+            if (i == 0) dir = Math.random() * 2 * Math.PI;
+            else dir = Math.PI + dir;
             
             // create the particle object
             var constructor = getConstructorFromType("photon");

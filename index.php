@@ -2,6 +2,15 @@
 <html>
     <head>
         <title>Bizarre Accelerator</title>
+        <meta name="description" content="A puzzle game to design a particle accelerator to shoot some targets. It's a game for everyone!">
+        <meta name="keywords" content="game, particle accelerator, physics">
+        <meta name="robots" content="index, follow">
+        <meta name="language" content="EN">
+        <meta name="author" content="copycat91, imrenagi">
+        <meta name="creationdate" content="Aug 03, 2013">
+        <meta name="distribution" content="global">
+        <meta name="rating" content="general">
+        <meta name="generator" content="FreeMetaTagGenerator.com">
         
         <script type="text/javascript" src="js/jquery-2.0.3.js"></script>
         <script type="text/javascript" src="js/kinetic-v4.5.4.min.js"></script>
@@ -36,6 +45,7 @@
             }
         </style>
         
+        <link rel="shortcut icon" href="favicon.ico">
         <link href="css/main.css" rel="stylesheet" type="text/css"/>
         <link href="css/introduction.css" rel="stylesheet" type="text/css"/>
         <link href="css/play.css" rel="stylesheet" type="text/css"/>
@@ -60,7 +70,7 @@
                         <script type="text/javascript" src="http://s7.addthis.com/js/300/addthis_widget.js#pubid=xa-506d6ba737236b31"></script>
                         
                         <!--<br/><br/>-->
-                        <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.facebook.com/bizarre.accelerator" data-via="imrenagi" data-lang="en">Tweet</a>
+                        <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.facebook.com/bizarre.accelerator" data-via="BAccelerator" data-lang="en">Tweet</a>
                         <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
                     </div>
                 </div>
