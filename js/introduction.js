@@ -111,8 +111,8 @@
             elmt.css("left", "0px");
             elmt.css("width", "100%");
             elmt.css("height", "100%");
-            elmt.css("z-index", "999999");
-            elmt.css("background", "#d19f62");
+            elmt.css("z-index", "9999999");
+            elmt.css("background", 'url("img/web/gamebg.jpg")');
         }
         
         // show next image

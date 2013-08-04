@@ -15,12 +15,18 @@ function requestStage(stageNum) {
                 var setup = function() {
                     stage = new Stage(json, stageCreator);
                     stage.setup();
-                    $("#play").attr("disabled", "true");
+                    
+                    // disable the play
+                    $("#play").attr("src", "img/web/r-play.png").on("click", function(){return false});
+                    // $("#play").attr("disabled", "true");
                     
                     setTimeout(function() {
                         if (runTimerID != 0) clearTimeout(runTimerID);
                         runTimerID = 0;
-                        $("#play").removeAttr("disabled"); // enable play
+                        
+                        // enable play
+                        $("#play").attr("src", "img/web/b-play.png").on("click", stage.play);
+                        // $("#play").removeAttr("disabled"); // enable play
                     }, 2000);
                 }
                 

@@ -1,24 +1,36 @@
-<div id="stage-container"></div>
-<div id="utilities-wrapper">
-    <div id="utils-container">&nbsp;</div>
-    <div id="elements-container">&nbsp;</div>
-</div>
-<div class="control-wrapper">
-    Stage Creator
-    <br/>
-    
-    <img class="clickable" src="img/web/b-play.png" onclick="stage.play()" title="Play" width="40"/>
-    <img class="clickable" src="img/web/b-pause.png" onclick="stage.pause()" title="Pause" width="40"/>
-    <img class="clickable" src="img/web/b-stop.png" onclick="stage.stop()" title="Stop" width="40"/>
-    <br/>
-    
-    <img class="clickable" src="img/web/b-restart.png" onclick="stage.restart()" title="Restart" width="40"/>
-    <a href="stage-selection.html"><img src="img/web/b-back.png" title="Back to stage selection" width="40"/></a>
-    <br/>
-    
-    <input type="text" id="stage-name" size="2"/>
-</div>
+<style type="text/css">
+    .play-wrapper {
+        margin: 0px;
+        padding: 0px;
+        width: 100%;
+        height: 100%;
+        background: url("img/web/gamebg.jpg");
+        color: white;
+    }
+</style>
 
+<div class="play-wrapper">
+    <div id="stage-container"></div>
+    <div id="utilities-wrapper">
+        <div id="utils-container">&nbsp;</div>
+        <div id="elements-container">&nbsp;</div>
+    </div>
+    <div class="control-wrapper">
+        Stage Creator
+        <br/>
+        
+        <img class="clickable" src="img/web/b-play.png" onclick="stage.play()" title="Play" width="40" id="play"/>
+        <img class="clickable" src="img/web/b-pause.png" onclick="stage.pause()" title="Pause" width="40" id="pause"/>
+        <img class="clickable" src="img/web/b-stop.png" onclick="stage.stop()" title="Stop" width="40" id="stop"/>
+        <br/>
+        
+        <img class="clickable" src="img/web/b-restart.png" onclick="stage.restart()" title="Restart" width="40" id="clear"/>
+        <a href="stage-selection.html"><img src="img/web/b-back.png" title="Back to stage selection" width="40"/></a>
+        <br/>
+        
+        <input type="text" id="stage-name" size="2"/>
+    </div>
+</div>
 <div id="intro"></div>
 
 

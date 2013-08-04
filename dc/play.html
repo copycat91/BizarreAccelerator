@@ -1,30 +1,90 @@
+<style type="text/css">
+    .play-wrapper {
+        margin: 0px;
+        padding: 0px;
+        width: 100%;
+        height: 100%;
+        background: url("img/web/gamebg.jpg");
+        color: white;
+    }
+    
+    .small-buttons {
+        display: block;
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        background-position: 0px 0px;
+        background-size: 40px 40px;
+        float: left;
+    }
+    
+    .play {background-image: url("img/web/b-play.png");}
+    .play:hover {background-image: url("img/web/g-play.png");}
+    
+    .pause {background-image: url("img/web/b-pause.png");}
+    .pause:hover {background-image: url("img/web/g-pause.png");}
+    
+    .stop {background-image: url("img/web/b-stop.png");}
+    .stop:hover {background-image: url("img/web/g-stop.png");}
+    
+    .restart {background-image: url("img/web/b-restart.png");}
+    .restart:hover {background-image: url("img/web/g-restart.png");}
+    
+    .back-button {background-image: url("img/web/b-back.png");}
+    .back-button:hover {background-image: url("img/web/g-back.png");}
+    
+    #congrats {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        margin: 0px;
+        width: 100%;
+        height: 100%;
+        background-image: url("img/web/gamebg.jpg");
+        text-align: center;
+        display:none;
+    }
+    #congrats img {
+        display: block;
+        margin-top: 150px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
 
+<div class="play-wrapper">
+    <div id="stage-container"></div>
+    <div id="utilities-wrapper">
+        <div id="utils-container">&nbsp;</div>
+        <div id="elements-container">&nbsp;</div>
+    </div>
+    <div class="control-wrapper">
+        Stage: %s%
+        <br/>
+        
+        <div id="play" class="play small-buttons" onclick="stage.play()">&nbsp;</div>
+        <div id="pause" class="pause small-buttons" onclick="stage.pause()">&nbsp;</div>
+        <div id="stop" class="stop small-buttons" onclick="stage.stop()">&nbsp;</div>
+        <br/>
+        <div id="clear" class="restart small-buttons" onclick="stage.restart()">&nbsp;</div>
+        <a href="stage-selection.html" title="Back" class="back-button small-buttons">&nbsp;</a>
+        <div class="clear">&nbsp;</div>
+        
+    </div>
 
-<div id="stage-container"></div>
-<div id="utilities-wrapper">
-    <div id="utils-container">&nbsp;</div>
-    <div id="elements-container">&nbsp;</div>
+    <div id="intro"></div>
+    <div id="congrats">
+        <img src="img/web/congratz.png"/>
+        <div style="margin-left:460px">
+            <a href="stage-selection.html" class="back-button small-buttons">&nbsp;</a>
+            <div class="play small-buttons" onclick="goToNextStage(stage.stageName)">&nbsp;</div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        requestStage(%s%);
+        document.getElementById("stage-container").addEventListener("contextmenu", function(e) {
+            e.preventDefault();
+        });
+    </script>
 </div>
-<div class="control-wrapper">
-    Stage: %s%
-    <br/>
-    
-    <img class="clickable" src="img/web/b-play.png" onclick="stage.play()" title="Play" width="40"/>
-    <img class="clickable" src="img/web/b-pause.png" onclick="stage.pause()" title="Pause" width="40"/>
-    <img class="clickable" src="img/web/b-stop.png" onclick="stage.stop()" title="Stop" width="40"/>
-    <br/>
-    
-    <img class="clickable" src="img/web/b-restart.png" onclick="stage.restart()" title="Restart" width="40"/>
-    <a href="stage-selection.html"><img src="img/web/b-back.png" title="Back to stage selection" width="40"/></a>
-    
-</div>
-
-<div id="intro"></div>
-
-<script type="text/javascript">
-    requestStage(%s%);
-    document.getElementById("stage-container").addEventListener("contextmenu", function(e) {
-        e.preventDefault();
-    });
-</script>
-

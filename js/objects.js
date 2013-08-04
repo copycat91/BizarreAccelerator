@@ -386,7 +386,7 @@ function CancerTargetObj(x, y, dir) {
     this.type = "cancer-target";
     this.particleType = "proton";
     this.shape.setFillPatternImage(imagesLoader.CancerTarget);
-    this.energy = 10000;
+    this.energy = 9000;
 }
 
 CollisionTargetObj.prototype = new Target();
@@ -430,7 +430,7 @@ function FurnitureTargetObj(x, y, dir) {
     this.type = "furniture-target";
     this.particleType = "electron";
     this.shape.setFillPatternImage(imagesLoader.FurnitureTarget);
-    this.energy = 10000;
+    this.energy = 9000;
 }
 
 FoodTargetObj.prototype = new FixedTargetObj();

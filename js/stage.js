@@ -79,14 +79,23 @@ Stage.prototype.setStageMap = function() {
         height: this.h
     });
     
-    // add background
     this.bg = new Kinetic.Rect({
         x: 0,
         y: 0,
         width: this.w,
         height: this.h,
-        fill: "#222222"//"#ffb720"
+        // fill: "#222222"//"#ffb720"
+        // fillPatternImage: bgImage
     });
+    // add background image
+    var thisBg = this.bg;
+    var bgImage = new Image();
+    bgImage.onload = function() {
+        thisBg.setFillPatternImage(bgImage);
+    }
+    bgImage.src = "img/web/gamebg.jpg";
+    
+    // add bg to the layer
     this.mBgLayer.add(this.bg);
     
     // set the click handler on the background
@@ -340,7 +349,7 @@ Stage.prototype.refreshUtils = function() { // refresh the utils canvas accordin
         // if it's selected
         if (this.utils[type].selected) {
             obj.shape.setStrokeWidth(1);
-            obj.shape.setStroke("brown"); // can be specified per object
+            obj.shape.setStroke("white"); // can be specified per object
         }
         
         // select/unselect util if it's clicked
@@ -385,7 +394,8 @@ Stage.prototype.refreshUtils = function() { // refresh the utils canvas accordin
             text: num.toString(),
             fontSize: 10,
             fontFamily: "acmesa",
-            fill: "black"
+            fill: "white",
+            stroke: "white"
         });
         this.uNumLayer.add(numShape);
         
@@ -789,13 +799,15 @@ Stage.prototype.run = function() {
 
 Stage.prototype.finishStage = function() {
     this.pause();
-    alert("Congratulations!"); // todo: add some special congratulation here ???
     this.stop();
+    
+    $("#congrats").fadeIn()
+    // alert("Congratulations!"); // todo: add some special congratulation here ???
     
     clearTimeout(runTimerID);
     runTimerID = 0;
     
-    goToNextStage(this.stageName);
+    // goToNextStage(this.stageName);
 }
 
 Stage.prototype.postRunProcess = function() {

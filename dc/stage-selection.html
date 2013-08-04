@@ -1,6 +1,15 @@
 <style type="text/css">
+    .stage-select-top-wrapper {
+        margin: 0px;
+        padding: 0px;
+        width: 100%;
+        height: 100%;
+        background: url("img/web/gamebg.jpg");
+    }
+    
     .stage-select-wrapper {
         font-family: acmesa;
+        color: white;
         margin: 12px;
         font-size: 16pt;
         margin-top: 40px;
@@ -28,48 +37,57 @@
     .back-button {
         float: right;
         margin-right: 90px;
+        width: 80px;
+        height: 80px;
+        background-image: url("img/web/b-back.png");
+        background-position: 1px 0px;
+    }
+    .back-button:hover {
+        background-image: url("img/web/g-back.png");
+        background-position: 0px 0px;
     }
 </style>
 
-<div class="stage-select-wrapper">
-    Stages:
-    <div class="stages-wrapper">
-        <a class="stages" href="play.html?s=1">1</a>
-        <a class="stages" href="play.html?s=2">2</a>
-        <a class="stages" href="play.html?s=3">3</a>
-        <a class="stages" href="play.html?s=4">4</a>
-        <a class="stages" href="play.html?s=5">5</a>
-        <a class="stages" href="play.html?s=6">6</a>
-        <a class="stages" href="play.html?s=7">7</a>
-        <a class="stages" href="play.html?s=8">8</a>
-        <a class="stages" href="play.html?s=9">9</a>
-        <a class="stages" href="play.html?s=10">10</a>
-        <a class="stages" href="play.html?s=11">11</a>
-        <a class="stages" href="play.html?s=12">12</a>
-        <a class="stages" href="play.html?s=13">13</a>
-        <a class="stages" href="play.html?s=14">14</a>
-        <a class="stages" href="play.html?s=15">15</a>
-        <a class="stages" href="play.html?s=16">16</a>
-        <!--
-        <a class="stages" href="play.html?s=17">17</a>
-        <a class="stages" href="play.html?s=18">18</a>
-        <a class="stages" href="play.html?s=19">19</a>
-        <a class="stages" href="play.html?s=20">20</a>
-        <a class="stages" href="play.html?s=21">21</a>
-        <a class="stages" href="play.html?s=22">22</a>
-        <a class="stages" href="play.html?s=23">23</a>
-        <a class="stages" href="play.html?s=24">24</a>
-        <a class="stages" href="play.html?s=25">25</a>
-        <a class="stages" href="play.html?s=26">26</a>
-        <a class="stages" href="play.html?s=27">27</a>
-        <a class="stages" href="play.html?s=28">28</a>
-        <a class="stages" href="play.html?s=29">29</a>
-        <a class="stages" href="play.html?s=30">30</a>
-        -->
+<div class="stage-select-top-wrapper">
+    &nbsp;
+    <div class="stage-select-wrapper">
+        Stages:
+        <div class="stages-wrapper">
+            <a class="stages" href="play.html?s=1">1</a>
+            <a class="stages" href="play.html?s=2">2</a>
+            <a class="stages" href="play.html?s=3">3</a>
+            <a class="stages" href="play.html?s=4">4</a>
+            <a class="stages" href="play.html?s=5">5</a>
+            <a class="stages" href="play.html?s=6">6</a>
+            <a class="stages" href="play.html?s=7">7</a>
+            <a class="stages" href="play.html?s=8">8</a>
+            <a class="stages" href="play.html?s=9">9</a>
+            <a class="stages" href="play.html?s=10">10</a>
+            <a class="stages" href="play.html?s=11">11</a>
+            <a class="stages" href="play.html?s=12">12</a>
+            <a class="stages" href="play.html?s=13">13</a>
+            <a class="stages" href="play.html?s=14">14</a>
+            <a class="stages" href="play.html?s=15">15</a>
+            <a class="stages" href="play.html?s=16">16</a>
+            <!--
+            <a class="stages" href="play.html?s=17">17</a>
+            <a class="stages" href="play.html?s=18">18</a>
+            <a class="stages" href="play.html?s=19">19</a>
+            <a class="stages" href="play.html?s=20">20</a>
+            <a class="stages" href="play.html?s=21">21</a>
+            <a class="stages" href="play.html?s=22">22</a>
+            <a class="stages" href="play.html?s=23">23</a>
+            <a class="stages" href="play.html?s=24">24</a>
+            <a class="stages" href="play.html?s=25">25</a>
+            <a class="stages" href="play.html?s=26">26</a>
+            <a class="stages" href="play.html?s=27">27</a>
+            <a class="stages" href="play.html?s=28">28</a>
+            <a class="stages" href="play.html?s=29">29</a>
+            <a class="stages" href="play.html?s=30">30</a>
+            -->
+        </div>
+        <div class="clear">&nbsp;</div>
     </div>
-    <div class="clear">&nbsp;</div>
-</div>
 
-<div class="back-button">
-    <a href="front-page.html" title="Back"><img src="img/web/b-back.png"/></a>
+    <a href="front-page.html" title="Back" class="back-button">&nbsp;<!--<img src="img/web/b-back.png"/>--></a>
 </div>
