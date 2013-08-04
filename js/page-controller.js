@@ -1,3 +1,4 @@
+var gameAreaID = "#content";
 
 /* This function load a file dynamically, so the users don't need to refresh their pages
  */
@@ -50,10 +51,12 @@ function loadPage(furl) {
  */
 function pageLoading(cmd) {
     if (cmd.toLowerCase() == "show") {
-        $("#loading").show();
+        $(gameAreaID).html($("#loading").html());
+        // $("#loading").show();
     }
     else if (cmd.toLowerCase() == "hide") {
-        $("#loading").hide();
+        // $("#loading").hide();
+        // nothing to do, because after the content is loaded, html content of gameAreaID is automatically replaced
     }
 }
 

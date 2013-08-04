@@ -1,21 +1,21 @@
 1: (v) basic tutorial: shoot a target
 2: (v) tutorial to put an element (only E)
 3: (v) tutorial to rotate an element (only E)
-4: a stage with: E, proton source, and fixed target
-5: introducing magnetic field
-6: a stage with: E, B, proton source, and fixed target
-7: -same-
-8: introducing medical imaging and energy bar
-9: a stage with: E, B, proton source, and fixed target/medical imaging
-10: -same-
-11: introducing cancer treatment
-12: a stage with: E, B, proton source, and cancer treatment
-13: introducing electrons (-q)
-14: a stage with: E, B, electron source, and fixed target
-15: electrons accelerator for furniture furnishing
-16: a stage with: E, B, electron source, and furniture furnishing
-17: electrons accelerator for food packaging
-18: a stage with: E, B, electron source, and food packaging
+4: (v) a stage with: E, proton source, and fixed target
+5: (v) introducing magnetic field
+6: (v) a stage with: E, B, proton source, and fixed target
+7: (v) -same-
+8: (v) introducing medical imaging and energy bar
+9: (v) a stage with: E, B, proton source, and fixed target/medical imaging
+10: (v) -same-
+11: (v) introducing cancer treatment
+12: (v) a stage with: E, B, proton source, and cancer treatment
+13: (v) introducing electrons (-q)
+14: (v) a stage with: E, B, electron source, and fixed target
+15: (v) electrons accelerator for food packaging
+16: (v) a stage with: E, B, electron source, and food packaging
+17: electrons accelerator for furniture furnishing
+18: a stage with: E, B, electron source, and furniture furnishing
 19: introducing accelerator for cargo scanning and x-ray source
 20: a stage with: E, B, electron source, x-ray source, and cargo scanning
 21: -same-

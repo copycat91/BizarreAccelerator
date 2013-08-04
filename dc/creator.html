@@ -1,18 +1,26 @@
-Stage Creator <br/>
-<span class="clickable" onclick="stage.play()">Play</span>
-<span class="clickable" onclick="stage.pause()">Pause</span>
-<span class="clickable" onclick="stage.stop()">Stop</span>
-<span class="clickable" onclick="stage.removeAllUtils()">Clear</span>
-<span class="clickable" onclick="saveStage()">Save</span><br/>
-Stage Name: <input type="text" id="stage-name"/>
-
 <div id="stage-container"></div>
-<div id="utils-container"></div>
-<div id="elements-container"></div>
+<div id="utilities-wrapper">
+    <div id="utils-container">&nbsp;</div>
+    <div id="elements-container">&nbsp;</div>
+</div>
+<div class="control-wrapper">
+    Stage Creator
+    <br/>
+    
+    <img class="clickable" src="img/web/b-play.png" onclick="stage.play()" title="Play" width="40"/>
+    <img class="clickable" src="img/web/b-pause.png" onclick="stage.pause()" title="Pause" width="40"/>
+    <img class="clickable" src="img/web/b-stop.png" onclick="stage.stop()" title="Stop" width="40"/>
+    <br/>
+    
+    <img class="clickable" src="img/web/b-restart.png" onclick="stage.restart()" title="Restart" width="40"/>
+    <a href="stage-selection.html"><img src="img/web/b-back.png" title="Back to stage selection" width="40"/></a>
+    <br/>
+    
+    <input type="text" id="stage-name" size="2"/>
+</div>
 
-<textarea id="stage-conf"></textarea>
+<div id="intro"></div>
 
-<a href="front-page.html">Back</a>
 
 <script type="text/javascript">
     requestStage(0);

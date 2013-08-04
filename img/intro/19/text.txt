@@ -1,0 +1,3 @@
+Have you ever heard about x-ray? It can be produced using electrons!
+##
+With x-ray, you can detect dangerous materials inside cargo.

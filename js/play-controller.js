@@ -49,7 +49,13 @@ function goToNextStage(stageName) {
     var stageNum = parseInt(stageName);
     if (!isNaN(stageNum)) {
         var nextStage = stageNum + 1;
-        loadPage("play.html?s=" + nextStage.toString());
+        if (nextStage == 17) {
+            alert("You have successfully completed all stages! Congratulations!");
+            loadPage("stage-selection.html");
+        }
+        else {
+            loadPage("play.html?s=" + nextStage.toString());
+        }
     }
     else {
         // loadPage("stage-selection.html");

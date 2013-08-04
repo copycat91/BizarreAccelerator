@@ -1,0 +1,5 @@
+Now we are going to use the accelerator for an experiment with a detector.
+##
+When two particles collide, they produce new particles and the detector can detect the new particles
+##
+Collide your particles inside the collider to accomplish the goal!

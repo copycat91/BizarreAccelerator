@@ -1,0 +1,45 @@
+#stage-container {
+    padding: 0px;
+    margin: 0px;
+    width: 1024px;
+    height: 440px;
+}
+
+#utilities-wrapper {
+    padding: 0px;
+    margin-left: 0px;
+    margin-top: 0px;
+    width: 874px;
+    height: 120px;
+    display: block;
+    float: left;
+}
+
+#utils-container {
+    padding: 0px;
+    margin-left: 0px;
+    margin-top: 0px;
+    width: 874px;
+    height: 60px;
+    display: block;
+    overflow: hidden;
+}
+
+#elements-container {
+    padding: 0px;
+    margin-left: 0px;
+    margin-top: 0px;
+    width: 874px;
+    height: 60px;
+    display: block;
+    overflow: hidden;
+}
+
+.control-wrapper {
+    padding: 0px;
+    margin: 0px;
+    width: 150px;
+    height: 120px;
+    float: right;
+    display: block;
+}

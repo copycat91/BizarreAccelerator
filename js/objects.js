@@ -12,13 +12,14 @@ function GameObj(x, y, dir) {
 }
 
 GameObj.prototype.updateBoundingShape = function() { // bounding shape is rectangular by default
+    var margin = 1;
     var x = this.shape.getX();
     var y = this.shape.getY();
     var w = this.shape.getWidth();
     var h = this.shape.getHeight();
     this.boundingShape = {
         "type": "box",
-        "coords": [[x,y],[x+w,y],[x+w,y+h],[x,y+h]]
+        "coords": [[x+margin,y+margin],[x+w-margin,y+margin],[x+w-margin,y+h-margin],[x+margin,y+h-margin]]
     }
 }
 
@@ -84,6 +85,7 @@ function EnergyBar(x, y, w, h, dir) {
     var wb = w;
     var hb = thick;
     var offsetb = [w/2, thick + padding + h/2];
+    this.dir = dir;
     
     this.outline = new Kinetic.Rect({
         x: xb,
@@ -111,8 +113,7 @@ function EnergyBar(x, y, w, h, dir) {
         height: hb,
         offset: offsetb,
         strokeWidth: 0,
-        fillPatternImage: imagesLoader.EnergyBar,
-        fillPatternRotation: dir
+        fillPatternImage: imagesLoader.EnergyBar
     });
     this.outlineTarget.setRotation(dir);
     this.outline.setRotation(dir);
@@ -270,7 +271,7 @@ function MuonSourceObj(x, y, dir) {
     
     // styling 
     this.shape.setFillPatternImage(imagesLoader.MuonSrc);
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
     
     this.particleType = "muon";
 }
@@ -284,7 +285,7 @@ function ElectronSourceObj(x, y, dir) {
     
     // styling 
     this.shape.setFillPatternImage(imagesLoader.ElectronSrc);
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
     
     this.particleType = "electron";
 }
@@ -298,7 +299,7 @@ function ProtonSourceObj(x, y, dir) {
     
     // styling 
     this.shape.setFillPatternImage(imagesLoader.ProtonSrc);
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
     
     this.particleType = "proton";
 }
@@ -337,6 +338,7 @@ function Target(x, y, dir) {
 }
 
     Target.prototype.checkParticle = function(particle) {
+        if ((particle.type != this.particleType) && (particle.type == "photon")) return false;
         return ((particle.type == this.particleType) || (this.particleType == "all"));
     }
     
@@ -353,6 +355,7 @@ function Target(x, y, dir) {
     }
     
     Target.prototype.showParticleEnergy = function(energy) {
+        console.log(energy);
         if (this.energyBar) this.energyBar.setEnergyBarVal(energy);
     }
 
@@ -362,7 +365,7 @@ function FixedTargetObj(x, y, dir) {
     Target.call(this, x, y, dir);
     this.type = "fixed-target";
     this.shape.setFillPatternImage(imagesLoader.FixedTarget);
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
     this.energy = 1500; // by default, it is same with source energy
 }
 
@@ -373,6 +376,7 @@ function MedImageTargetObj(x, y, dir) {
     this.type = "med-image-target";
     this.particleType = "proton";
     this.shape.setFillPatternImage(imagesLoader.MedImageTarget);
+    this.energy = 5000;
 }
 
 CancerTargetObj.prototype = new FixedTargetObj();
@@ -382,6 +386,7 @@ function CancerTargetObj(x, y, dir) {
     this.type = "cancer-target";
     this.particleType = "proton";
     this.shape.setFillPatternImage(imagesLoader.CancerTarget);
+    this.energy = 10000;
 }
 
 CollisionTargetObj.prototype = new Target();
@@ -391,7 +396,7 @@ function CollisionTargetObj(x, y, dir) {
     this.type = "collision-target";
     this.particleType = "proton";
     this.shape.setFillPatternImage(imagesLoader.CollisionTarget);
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
     this.energy = 5000;
 }
 
@@ -425,6 +430,7 @@ function FurnitureTargetObj(x, y, dir) {
     this.type = "furniture-target";
     this.particleType = "electron";
     this.shape.setFillPatternImage(imagesLoader.FurnitureTarget);
+    this.energy = 10000;
 }
 
 FoodTargetObj.prototype = new FixedTargetObj();
@@ -434,6 +440,7 @@ function FoodTargetObj(x, y, dir) {
     this.type = "food-target";
     this.particleType = "electron";
     this.shape.setFillPatternImage(imagesLoader.FoodTarget);
+    this.energy = 5000;
 }
 
 CargoTargetObj.prototype = new FixedTargetObj();
@@ -483,7 +490,7 @@ function BlockObj(x, y, dir) {
     this.img = imagesLoader.Block;
     this.shape.setFillPatternImage(this.img);
     this.shape.setFillPatternRotation(this.dir);
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
 }
 
 MagFieldObj.prototype = new Path();
@@ -492,7 +499,7 @@ function MagFieldObj(x, y, dir) {
     Path.call(this, x, y, dir);
     this.type = "mag-field";
     this.shape.setFill("blue");
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
     
     this.Bz = 1;
 }
@@ -507,7 +514,7 @@ function StrongMagFieldObj(x, y, dir) {
     this.imgs = [imagesLoader.Bin, imagesLoader.Bout];
     this.imgPointer = (this.dir >= 0) ? 0 : 1;
     this.shape.setFillPatternImage(this.imgs[this.imgPointer]);
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
     
     var BDir = (this.dir >= 0) ? 1 : -1;
     this.Bz = BDir * 2.45;
@@ -523,7 +530,7 @@ function AltMagFieldObj(x, y, dir) {
     this.imgs = [imagesLoader.BAltIn, imagesLoader.BAltInOff, imagesLoader.BAltOut, imagesLoader.BAltOutOff];
     this.imgPointer = (this.dir >= 0) ? 0 : 2;
     this.shape.setFillPatternImage(this.imgs[this.imgPointer]);
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
     
     var BDir = (this.dir >= 0) ? 1 : -1;
     this.Bz = BDir * 2.45;
@@ -585,7 +592,7 @@ function ElecFieldObj(x, y, dir) {
     this.img = imagesLoader.E;
     this.shape.setFillPatternImage(this.img);
     this.shape.setFillPatternRotation(this.dir);
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
 }
 
 XRaySrcObj.prototype = new Path();
@@ -600,7 +607,7 @@ function XRaySrcObj(x, y, dir) {
     // styling
     this.img = imagesLoader.XRay;
     this.shape.setFillPatternImage(this.img);
-    this.shape.setStroke("white");
+    this.shape.setStroke("transparent");
 }
 
     XRaySrcObj.prototype.canProduceXRay = function(p) { // when a particle collide it

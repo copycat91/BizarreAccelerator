@@ -15,14 +15,15 @@ function Stage(data, stageCreator) {
     
     // predefined constants
     this.w = 1024;
-    this.h = 550;
+    this.h = 440;
     this.stage_container = "stage-container";
     this.utils_container = "utils-container";
-    this.utils_container_w = 1024;
-    this.utils_container_h = 110;
+    this.utils_container_w = 874;
+    this.utils_container_h = 60;
+    
     this.elements_container = "elements-container";
-    this.elements_container_w = 1024;
-    this.elements_container_h = 110;
+    this.elements_container_w = 874;
+    this.elements_container_h = 60;
     
     this.stage;
     this.mBgLayer; this.mLayer; this.mParticlesLayer; this.mUtilsLayer;
@@ -84,7 +85,7 @@ Stage.prototype.setStageMap = function() {
         y: 0,
         width: this.w,
         height: this.h,
-        fill: "white"
+        fill: "#222222"//"#ffb720"
     });
     this.mBgLayer.add(this.bg);
     
@@ -92,14 +93,22 @@ Stage.prototype.setStageMap = function() {
     // if it's clicked, then add the selected utility onto the map
     // if there is no selected utility, then do nothing
     var thisObj = this;
-    this.bg.on("click", function(evt) {
-        // do nothing if there is no selected util
-        if (!thisObj.canPlaceUtil()) return;
+    this.bg.on("mouseup", function(e) {
         
-        var pos = thisObj.stage.getMousePosition();
-        var x = parseInt(pos.x);
-        var y = parseInt(pos.y);
-        thisObj.placeUtil(x, y);
+        // detect right or left click
+        var rightClick = false;
+        if (e.which) rightClick = (e.which == 3);
+        else if (e.button) rightClick = (e.button == 2);
+        
+        if (!rightClick) { // left click
+            var pos = thisObj.stage.getMousePosition();
+            var x = parseInt(pos.x);
+            var y = parseInt(pos.y);
+            
+            // if (thisObj.canPlaceUtil())
+            if (thisObj.canPlaceUtil(x, y))
+                thisObj.placeUtil(x, y);
+        }
     });
     
     // add initial objects on the map
@@ -113,7 +122,6 @@ Stage.prototype.setStageMap = function() {
 
 // some stage can't show energy bars before we introduce them
 Stage.prototype.canShowEnergyBars = function() {
-    // console.log(this.stageName);
     return (parseInt(this.stageName) >= 8);
 }
 
@@ -319,8 +327,8 @@ Stage.prototype.refreshUtils = function() { // refresh the utils canvas accordin
     var dir = 0;
     var x = xMin;
     var y = yMin;
-    var xNum = 41; // offset of the number below the image
-    var yNum = 43;
+    var xNum = 37; // offset of the number below the image
+    var yNum = 39;
     
     // add drawings to the utils canvas
     var type;
@@ -331,6 +339,7 @@ Stage.prototype.refreshUtils = function() { // refresh the utils canvas accordin
         
         // if it's selected
         if (this.utils[type].selected) {
+            obj.shape.setStrokeWidth(1);
             obj.shape.setStroke("brown"); // can be specified per object
         }
         
@@ -350,7 +359,7 @@ Stage.prototype.refreshUtils = function() { // refresh the utils canvas accordin
                 thisObj.refreshUtils();
             }
             else { // right clicked
-                if (this.stageCreator) {
+                if (thisObj.stageCreator) {
                     thisObj.addProvidedElements(this.type, -1); // decrease the number of the provided element
                     thisObj.refreshProvidedElements();
                     return false;
@@ -359,7 +368,7 @@ Stage.prototype.refreshUtils = function() { // refresh the utils canvas accordin
         });
         
         obj.on("dblclick", function(e) {
-            if (this.stageCreator) {
+            if (thisObj.stageCreator) {
                 thisObj.addProvidedElements(this.type, 1); // increase the number of the provided element
                 thisObj.refreshProvidedElements();
             }
@@ -375,7 +384,7 @@ Stage.prototype.refreshUtils = function() { // refresh the utils canvas accordin
             y: y+yNum,
             text: num.toString(),
             fontSize: 10,
-            fontFamily: "Calibri",
+            fontFamily: "acmesa",
             fill: "black"
         });
         this.uNumLayer.add(numShape);
@@ -405,10 +414,26 @@ Stage.prototype.setSelectUtil = function(typeSelected, select) { // set the util
     this.utils[typeSelected].selected = select;
 }
 
-Stage.prototype.canPlaceUtil = function() {
+Stage.prototype.canPlaceUtil = function(x, y) {
+    // if there is no selected util, then return false
     var typeSelected = this.getSelectedUtil();
     if (typeSelected == 0) return false;
-    return this.utils[typeSelected].num > 0;
+    
+    if (this.utils[typeSelected].num <= 0) return false;
+    
+    // construct the object to see whether it collides with other objects or not
+    var constructor = getConstructorFromType(typeSelected);
+    var obj = new constructor(x, y, 0);
+    
+    // adjust the object's position
+    var w = obj.shape.getWidth();
+    var h = obj.shape.getHeight();
+    obj.moveTo(x-w/2, y-h/2);
+    
+    // check whether the object collide with other objects
+    var elements = this.elements.concat(this.utilsOnMap);
+    var colliders = this.getAllColliders([obj], elements);
+    return (colliders.length == 0);
 }
 
 Stage.prototype.placeUtil = function(x, y) { // place the selected util and return its object (precondition: there must be a selected util)
@@ -440,7 +465,8 @@ Stage.prototype.placeUtil = function(x, y) { // place the selected util and retu
         obj.updateBoundingShape();
         
         // check whether the dragged object collides with other objects
-        var colliders = thisObj.getAllColliders([obj], thisObj.elements);
+        var elements = thisObj.elements.concat(thisObj.utilsOnMap);
+        var colliders = thisObj.getAllColliders([obj], elements);
         
         // if they collide, then return the object to its initial position
         if (colliders.length > 0) {
@@ -604,6 +630,11 @@ Stage.prototype.stop = function() {
     this.refresh();
 }
 
+Stage.prototype.restart = function() {
+    this.stop();
+    this.removeAllUtils();
+}
+
 // this is perhaps the longest function in this file
 Stage.prototype.run = function() {
     if (this.playStatus == 1) {
@@ -758,7 +789,7 @@ Stage.prototype.run = function() {
 
 Stage.prototype.finishStage = function() {
     this.pause();
-    alert("Congratulations!"); // todo: add some special congratulation here
+    alert("Congratulations!"); // todo: add some special congratulation here ???
     this.stop();
     
     clearTimeout(runTimerID);

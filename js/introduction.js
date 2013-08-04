@@ -59,13 +59,19 @@
             }
             
             // append an introduction images and texts container
-            elmt.append("<div class='intro-images'>Loading...</div>");
-            elmt.append("<div class='intro-texts'></div>");
+            elmt.append("<div class='intro-wrapper'>&nbsp;</div>");
+            var wrapper = elmt.find(".intro-wrapper");
+            
+            wrapper.append("<div class='intro-images'>Loading...</div>");
+            wrapper.append("<div class='intro-texts'></div>");
             
             // append 3 buttons (prev, next, and close)
-            elmt.append("<input type='button' class='intro-prev' value='Prev'/>");
-            elmt.append("<input type='button' class='intro-next' value='Next'/>");
-            elmt.append("<input type='button' class='intro-close' value='Close'/>");
+            wrapper.append("<input type='button' class='intro-prev' value='Prev'/>");
+            wrapper.append("<input type='button' class='intro-next' value='Next'/>");
+            wrapper.append("<input type='button' class='intro-close' value='Close'/>");
+            // wrapper.append("<img src='img/web/g-back.png' class='intro-prev' value='Prev'/>");
+            // wrapper.append("<img src='img/web/g-play.png' class='intro-next' value='Next'/>");
+            // wrapper.append("<img src='img/web/g-stop.png' class='intro-close' value='Close'/>");
             
             // get the new elements
             imgsContainerElmt = elmt.find(".intro-images");
@@ -100,13 +106,13 @@
             
             // now display the window with some styling
             elmt.css("display", "block");
-            elmt.css("position", "fixed");
+            elmt.css("position", "absolute");
             elmt.css("top", "0px");
             elmt.css("left", "0px");
             elmt.css("width", "100%");
             elmt.css("height", "100%");
             elmt.css("z-index", "999999");
-            elmt.css("background", "white");
+            elmt.css("background", "#d19f62");
         }
         
         // show next image

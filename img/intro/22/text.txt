@@ -1,0 +1,1 @@
+Here is alternating magnetic field. It turns on and off with some time interval.
