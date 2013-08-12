@@ -24,9 +24,16 @@ GameObj.prototype.updateBoundingShape = function() { // bounding shape is rectan
 }
 
 GameObj.prototype.isCollide = function(obj) {
-    // now only box-box supported
-    if (this.boundingShape.type == "box" && obj.boundingShape.type == "box") {
-        return boxesOverlap(this.boundingShape.coords, obj.boundingShape.coords);
+    // now only box and particle types supported
+    if ((this.boundingShape.type == "box" && obj.boundingShape.type == "box") ||
+        (this.boundingShape.type == "particle" && obj.boundingShape.type == "particle")){
+            return boxesOverlap(this.boundingShape.coords, obj.boundingShape.coords);
+    }
+    else if (this.boundingShape.type == "box" && obj.boundingShape.type == "particle") {
+            return boxesOverlap(this.boundingShape.coords, squeezeBox(obj.boundingShape.coords));
+    }
+    else if (this.boundingShape.type == "particle" && obj.boundingShape.type == "box") {
+            return boxesOverlap(squeezeBox(this.boundingShape.coords), obj.boundingShape.coords);
     }
     return false;
 }
@@ -201,14 +208,17 @@ function Source(x, y, dir) {
         var constructor = getConstructorFromType(this.particleType);
         var particleObj = new constructor(xp, yp, dir);
         
-        // adjust the position of the particle
-        var wp = particleObj.shape.getWidth();
-        var hp = particleObj.shape.getHeight();
-        particleObj.moveTo(xp-wp/2, yp-hp/2);
-        
         // set velocity of the particle
         particleObj.setEnergy(this.energy);
         particleObj.setVelocityRad(this.dir);
+        
+        // adjust the position of the particle
+        var wp = particleObj.shape.getWidth();
+        var hp = particleObj.shape.getHeight();
+        var vxp = particleObj.vx;
+        var vyp = particleObj.vy;
+        particleObj.moveTo(xp-wp/2-vxp*C.dt, yp-hp/2-vyp*C.dt);
+        // particleObj.moveTo(xp-wp/2, yp-hp/2);
         
         return particleObj;
     }
@@ -517,7 +527,8 @@ function StrongMagFieldObj(x, y, dir) {
     this.shape.setStroke("transparent");
     
     var BDir = (this.dir >= 0) ? 1 : -1;
-    this.Bz = BDir * 2.45;
+    // this.Bz = BDir * 3.14159265;
+    this.Bz = BDir * Math.PI; // i don't understand why it's equal to PI
 }
 
 AltMagFieldObj.prototype = new Path();
@@ -533,7 +544,8 @@ function AltMagFieldObj(x, y, dir) {
     this.shape.setStroke("transparent");
     
     var BDir = (this.dir >= 0) ? 1 : -1;
-    this.Bz = BDir * 2.45;
+    // this.Bz = BDir * 3.14159265;
+    this.Bz = BDir * Math.PI;
     
     this.active = 1;
     this.timerInit = C.frameInterval;
@@ -691,11 +703,12 @@ function Particle(x, y, dir) {
         var scale = Math.sqrt(Math.PI/4); // to get the same area between the circle and the bounding box of particle
         var d1 = r*scale - r;
         var d2 = r*scale + r;
+        // console.log(scale, r*scale, d1+d2);
         // var d1 = r*scale;
         // var d2 = d1;
         
         this.boundingShape = {
-            "type": "box",
+            "type": "particle",
             "coords": [[x-d1,y-d1],[x+d2,y-d1],[x+d2,y+d2],[x-d1,y+d2]]
         }
     }
@@ -861,7 +874,7 @@ function PhotonObj(x, y, dir) {
         var d2 = r*scale + r;
         
         this.boundingShape = {
-            "type": "box",
+            "type": "particle",
             "coords": [[x-d1,y-d1],[x+d2,y-d1],[x+d2,y+d2],[x-d1,y+d2]]
         }
     }

@@ -21,6 +21,14 @@ function Stage(data, stageCreator) {
     this.utils_container_w = 874;
     this.utils_container_h = 60;
     
+    this.grid_w = 40;
+    this.grid_h = 40;
+    this.grid_border = 1; // unused border of elements
+    this.grid_offset_x = parseInt((this.w % this.grid_w) / 2);
+    this.grid_offset_y = parseInt((this.h % this.grid_h) / 2);
+    this.grid_num_hor = parseInt(this.w / this.grid_w);
+    this.grid_num_ver = parseInt(this.h / this.grid_h);
+    
     this.elements_container = "elements-container";
     this.elements_container_w = 874;
     this.elements_container_h = 60;
@@ -111,8 +119,9 @@ Stage.prototype.setStageMap = function() {
         
         if (!rightClick) { // left click
             var pos = thisObj.stage.getMousePosition();
-            var x = parseInt(pos.x);
-            var y = parseInt(pos.y);
+            var gridPos = thisObj.getGridUpperLeftPos(pos.x, pos.y);
+            var x = parseInt(gridPos[0]);
+            var y = parseInt(gridPos[1]);
             
             // if (thisObj.canPlaceUtil())
             if (thisObj.canPlaceUtil(x, y))
@@ -197,12 +206,23 @@ Stage.prototype.setProvidedElements = function() {
  * When an element is converted to an object, it has additional method, like .move(), etc
  */
 Stage.prototype.makeObjFromElmt = function(elmt) {
+    var gridPos = this.getGridUpperLeftPos(elmt.pos[0], elmt.pos[1]);
     var constructor = getConstructorFromType(elmt.type);
-    var obj = new constructor(elmt.pos[0], elmt.pos[1], elmt.dir);
+    // var obj = new constructor(elmt.pos[0], elmt.pos[1], elmt.dir);
+    var obj = new constructor(gridPos[0], gridPos[1], elmt.dir);
     return obj;
 }
 
 
+/*********************** GRID FUNCTIONS ***********************/
+Stage.prototype.getGridUpperLeftPos = function(x, y) {
+    var xNew = parseInt((x - this.grid_offset_x) / this.grid_w) * this.grid_w + this.grid_offset_x;
+    var yNew = parseInt((y - this.grid_offset_y) / this.grid_h) * this.grid_h + this.grid_offset_y;
+    // return [xNew-this.grid_border, yNew-this.grid_border];
+    return [xNew, yNew];
+}
+
+/*********************** ALL ABOUT DRAWING, PLACING, REMOVING ELEMENTS ***********************/
 /* Add/remove an element to/from the map canvas layer (to be drawn on canvas)
  * an element must have attribute "type", "pos", and "dir"
  * * type: image and shape of the element will be determined based on its type
@@ -288,7 +308,7 @@ Stage.prototype.refresh = function() {
     this.draw();
 }
 
-/* getting elements on the map */
+/*********************** GETTING IMPORTANT ELEMENTS ON THE MAP ***********************/
 Stage.prototype.refreshSourcesAndTargets = function() {
     this.sources = this.getSources(false);
     this.targets = this.getTargets(false);
@@ -318,7 +338,7 @@ Stage.prototype.getTargets = function(fromCache) {
     return targets;
 }
 
-/* utilities functions */
+/*********************** UTILITIES FUNCTION ***********************/
 Stage.prototype.refreshUtils = function() { // refresh the utils canvas according to current number of utilities in this.utils
     // clear canvas
     this.utilsCanvas.removeChildren();
@@ -394,8 +414,7 @@ Stage.prototype.refreshUtils = function() { // refresh the utils canvas accordin
             text: num.toString(),
             fontSize: 10,
             fontFamily: "acmesa",
-            fill: "white",
-            stroke: "white"
+            fill: "white"
         });
         this.uNumLayer.add(numShape);
         
@@ -436,9 +455,9 @@ Stage.prototype.canPlaceUtil = function(x, y) {
     var obj = new constructor(x, y, 0);
     
     // adjust the object's position
-    var w = obj.shape.getWidth();
-    var h = obj.shape.getHeight();
-    obj.moveTo(x-w/2, y-h/2);
+    // var w = obj.shape.getWidth();
+    // var h = obj.shape.getHeight();
+    // obj.moveTo(x-w/2, y-h/2);
     
     // check whether the object collide with other objects
     var elements = this.elements.concat(this.utilsOnMap);
@@ -453,11 +472,13 @@ Stage.prototype.placeUtil = function(x, y) { // place the selected util and retu
     var typeSelected = this.getSelectedUtil();
     
     // construct an object of the selected util
+    var newPos = this.getGridUpperLeftPos(x, y);
     var constructor = getConstructorFromType(typeSelected);
-    var obj = new constructor(x, y, 0);
+    var obj = new constructor(newPos[0], newPos[1], 0);
+    // var obj = new constructor(x, y, 0);
     
     // adjust the position
-    obj.moveTo(obj.shape.getX()-obj.shape.getWidth()/2, obj.shape.getY()-obj.shape.getHeight()/2);
+    // obj.moveTo(obj.shape.getX()-obj.shape.getWidth()/2, obj.shape.getY()-obj.shape.getHeight()/2);
     
     // set the object to be draggable
     obj.shape.setDraggable(1);
@@ -466,13 +487,22 @@ Stage.prototype.placeUtil = function(x, y) { // place the selected util and retu
     var xInit = -1; var yInit = -1; var wasPlayed = 0;
     var thisObj = this; var dragged = 0;
     obj.shape.on("dragstart", function() {
-        xInit = obj.shape.getX();
-        yInit = obj.shape.getY();
+        xInit = obj.shape.getX() + obj.shape.getWidth()/2;
+        yInit = obj.shape.getY() + obj.shape.getHeight()/2;
+        var gridPosInit = thisObj.getGridUpperLeftPos(xInit, yInit);
+        xInit = gridPosInit[0];
+        yInit = gridPosInit[1];
         wasPlayed = thisObj.playStatus;
         thisObj.pause();
     });
     obj.shape.on("dragend", function() {
-        obj.updateBoundingShape();
+        // obj.updateBoundingShape();
+        
+        // place the element to the corresponding grid first
+        var currentX = obj.shape.getX() + obj.shape.getWidth()/2; // i think the grid position should be according to mouse position, but just try first...
+        var currentY = obj.shape.getY() + obj.shape.getHeight()/2;
+        var gridPos = thisObj.getGridUpperLeftPos(currentX, currentY);
+        obj.moveTo(gridPos[0], gridPos[1]);
         
         // check whether the dragged object collides with other objects
         var elements = thisObj.elements.concat(thisObj.utilsOnMap);
@@ -481,8 +511,10 @@ Stage.prototype.placeUtil = function(x, y) { // place the selected util and retu
         // if they collide, then return the object to its initial position
         if (colliders.length > 0) {
             obj.moveTo(xInit, yInit);
-            thisObj.refresh();
         }
+        
+        thisObj.refresh();
+        
         // todo: add animation here ???
         
         if (wasPlayed) thisObj.play();
@@ -536,7 +568,7 @@ Stage.prototype.placeUtil = function(x, y) { // place the selected util and retu
     return obj;
 }
 
-/* provided elements function (only in stage creator mode) */
+/*********************** PROVIDED ELEMENTS FUNCTION (ONLY IN CREATOR MODE) ***********************/
 Stage.prototype.refreshProvidedElements = function() {
     // clear canvas
     this.elementsCanvas.removeChildren();
@@ -573,8 +605,8 @@ Stage.prototype.refreshProvidedElements = function() {
             y: y+yNum,
             text: num.toString(),
             fontSize: 10,
-            fontFamily: "Calibri",
-            fill: "black"
+            fontFamily: "acmesa",
+            fill: "white"
         });
         this.eNumLayer.add(numShape);
         
@@ -605,11 +637,10 @@ Stage.prototype.addProvidedElements = function(typeAdded, num) {
     if (!found && num > 0) this.providedElements[typeAdded] = {"num": num};
 }
 
-/* Stage runtime functions */
+/*********************** STAGE RUNTIME FUNCTIONS ***********************/
 Stage.prototype.play = function() {
     this.playStatus = 1;
     if (runTimerID == 0) this.run();
-    // else console.log(runTimerID);
     
     // turn off the event handler
     this.stage.setListening(false);
@@ -819,6 +850,7 @@ Stage.prototype.postRunProcess = function() {
     }
 }
 
+/*********************** SUPPORTING FUNCTIONS ***********************/
 // return all pairs of objects from objs0 that collide with objects in objs1
 // return format: [[obj0A, obj1A], [obj0B, obj1B], ...] with no same pair
 Stage.prototype.getAllColliders = function(objs0, objs1) {

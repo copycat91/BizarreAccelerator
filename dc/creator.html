@@ -28,7 +28,7 @@
         <a href="stage-selection.html"><img src="img/web/b-back.png" title="Back to stage selection" width="40"/></a>
         <br/>
         
-        <input type="text" id="stage-name" size="2"/>
+        <!--<input type="text" id="stage-name" size="2"/>-->
     </div>
 </div>
 <div id="intro"></div>
@@ -50,7 +50,8 @@
         var conf = stage.getConfigObj();
         conf.stageName = stageName;
         
-        $("#stage-conf").html(JSON.stringify(conf));
+        //$("#stage-conf").html(JSON.stringify(conf));
+        console.log(JSON.stringify(conf));
     }
 </script>
 

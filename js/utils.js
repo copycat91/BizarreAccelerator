@@ -25,6 +25,29 @@ function rotateBox(coords, xyAxis, theta) {
     return newCoords;
 }
 
+// squeeze the box into one point only
+function squeezeBox(coords) {
+    var xmax = coords[0][0];
+    var xmin = coords[0][0];
+    var ymax = coords[0][1];
+    var ymin = coords[0][1];
+    
+    // getting the maximum and minimum value
+    for (var i = 0; i < coords.length; i++) {
+        var coord = coords[i];
+        var xc = coord[0];
+        var yc = coord[1];
+        if (xc > xmax) xmax = xc;
+        if (xc < xmin) xmin = xc;
+        if (yc > ymax) ymax = yc;
+        if (yc < ymin) ymin = yc;
+    }
+    
+    var x = (xmax + xmin) / 2;
+    var y = (ymax + ymin) / 2;
+    return [[x, y], [x, y], [x, y], [x, y]];
+}
+
 function movePoint(xy0, dxy) {
     return [xy0[0]+dxy[0], xy0[1]+dxy[1]];
 }
@@ -65,6 +88,19 @@ function oneBoxInsideAnother(coords0, coords1) {
     // transform the another box to a coordinate where the CM of the first box is the center
     var c1 = moveBox(coords1, [-xcm, -ycm]);
     c1 = rotateBox(c1, [0, 0], -theta);
+    
+    // get the center point of c1
+    var xcm1 = 0;
+    var ycm1 = 0;
+    for (var i = 0; i < c1.length; i++) {
+        xcm1 += c1[i][0];
+        ycm1 += c1[i][1];
+    }
+    xcm1 /= c1.length;
+    ycm1 /= c1.length;
+    
+    // add the center point to the c1 to make sure if it's really inside a box
+    c1.push([xcm1, ycm1]);
     
     // check overlap for each point
     for (var i = 0; i < c1.length; i++) {
